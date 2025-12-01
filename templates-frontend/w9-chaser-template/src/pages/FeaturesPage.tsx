@@ -1,0 +1,1 @@
+export { FeaturesPage as default } from "../components/features/features-page/FeaturesPage";

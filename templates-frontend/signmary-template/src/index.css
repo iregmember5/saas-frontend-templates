@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global base styles for light/dark mode */
+@layer base {
+  /* Base (light) */
+  html,
+  body,
+  #root {
+    background-color: #ffffff; /* Tailwind bg-white */
+    color: #111827; /* Tailwind text-gray-900 */
+    transition: background-color 300ms, color 300ms;
+    min-height: 100%;
+  }
+
+  /* dark mode defaults when `dark` class is present on <html> */
+  /* Use `html.dark` so adding the `dark` class to <html> applies site-wide */
+  html.dark,
+  html.dark body,
+  html.dark #root {
+    background-color: #0f172a; /* Tailwind bg-slate-900 */
+    color: #f1f5f9; /* Tailwind text-slate-100 */
+    transition: background-color 300ms, color 300ms;
+  }
+
+  /* Note: We rely on `html.dark` for explicit toggles. System preference is
+     handled in JS (Navbar) — Tailwind `dark:` utilities will also respect
+     `prefers-color-scheme` if you enable it separately. */
+
+  /* ensure links and other elements have sensible defaults */
+  a {
+    color: #2563eb; /* blue-600 */
+  }
+  html.dark a {
+    color: #60a5fa; /* blue-400 */
+  }
+}

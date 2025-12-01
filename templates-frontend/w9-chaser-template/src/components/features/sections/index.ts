@@ -1,0 +1,10 @@
+export { HeaderSection } from "./HeaderSection";
+export { EnhancedHowItWorks } from "./EnhancedHowItWorks";
+export { EnhancedFeatures } from "./EnhancedFeatures";
+export { EnhancedBenefits } from "./EnhancedBenefits";
+export { ProblemSolutionSection } from "./ProblemSolutionSection";
+export { CardSections } from "./CardSections";
+export { FAQSection } from "./FAQSection";
+export { TestimonialsSection } from "./TestimonialsSection";
+export { CTASection } from "./CTASection";
+export { PricingSection } from "./PricingSection";
