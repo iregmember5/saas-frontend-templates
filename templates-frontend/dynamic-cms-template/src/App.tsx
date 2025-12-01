@@ -53,7 +53,6 @@ function App() {
         return;
       }
 
-      // Check if we're on a features page
       if (path.includes("/features/") || hash.includes("#features/")) {
         const slugMatch =
           path.match(/\/features\/([^\/]+)/) ||
