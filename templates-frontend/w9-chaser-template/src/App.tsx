@@ -51,7 +51,6 @@ function App() {
         return;
       }
 
-      // Check if we're on blog index
       if (path.includes("/blog") || hash.includes("#blog")) {
         setCurrentView({ type: "blog" });
         return;

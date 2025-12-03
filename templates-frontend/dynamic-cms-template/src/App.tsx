@@ -78,7 +78,6 @@ function App() {
         return;
       }
 
-      // Default to landing page
       setCurrentView({ type: "landing" });
     };
 
