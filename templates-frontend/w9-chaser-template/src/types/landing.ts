@@ -367,8 +367,8 @@ export interface FeaturesPageApiResponse {
 // ===== API Service Functions =====
 const isDevelopment = import.meta.env.DEV;
 const frontendUrl = isDevelopment
-  ? "http://localhost:5173"
-  : "http://w9chaser.com";
+  ? "http://preview-signmary.dogskansascity.com"
+  : "https://preview-signmary.dogskansascity.com";
 
 const baseApiUrl = isDevelopment
   ? "/blogs/api/v2"

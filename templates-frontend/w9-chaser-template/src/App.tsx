@@ -32,7 +32,6 @@ function App() {
         return;
       }
 
-      // Legacy debug route defaults to features
       if (path.includes("/debug") || hash.includes("#debug")) {
         setCurrentView({ type: "debug-features" });
         return;
