@@ -329,58 +329,33 @@ jobs:
             fi
 
             echo ""
-            echo "🔐 Setting up SSL..."
+            echo "🔐 Installing SSL certificates..."
 
             for ENV_FILE in /tmp/deployment-package/*.env; do
-              if [ ! -f "$ENV_FILE" ]; then
-                continue
-              fi
-              
+              [ ! -f "$ENV_FILE" ] && continue
               source "$ENV_FILE"
+              [ "$BUILD_SUCCESS" != "true" ] && continue
               
-              if [ "$BUILD_SUCCESS" != "true" ]; then
-                continue
-              fi
-              
+              # Generate correct domain name
               SUBDOMAIN=$(echo "$TEMPLATE" | sed 's/-template$//')
-              if [[ ! "$SUBDOMAIN" =~ ^preview- ]]; then
-                SUBDOMAIN="preview-$SUBDOMAIN"
-              fi
-              
-              MAIN_DOMAIN="${{ secrets.MAIN_DOMAIN }}"
+              [[ ! "$SUBDOMAIN" =~ ^preview- ]] && SUBDOMAIN="preview-$SUBDOMAIN"
               FULL_DOMAIN="$SUBDOMAIN.$MAIN_DOMAIN"
               
-              echo ""
-              echo "🔒 Checking SSL for: $FULL_DOMAIN"
+              echo "📝 Installing SSL for: $FULL_DOMAIN"
               
-              DOMAIN_IP=$(dig +short $FULL_DOMAIN A @8.8.8.8 | head -1)
-              SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ifconfig.me)
-              
-              if [ -z "$DOMAIN_IP" ]; then
-                echo "⚠️  DNS not ready, skipping SSL"
-                echo "💡 Add DNS: $FULL_DOMAIN A → 46.202.176.105"
-                continue
-              fi
-              
-              echo "✅ DNS verified ($DOMAIN_IP == $SERVER_IP)"
-              
-              echo "🔐 Installing SSL..."
-              
-              if certbot --apache \
-                  -d "$FULL_DOMAIN" \
-                  --non-interactive \
-                  --agree-tos \
-                  --email "${{ secrets.SSL_EMAIL }}" \
-                  --redirect \
-                  --expand 2>&1 | tee /var/log/template-deployments/ssl-$SUBDOMAIN.log; then
-                echo "✅ SSL installed for $FULL_DOMAIN"
-              else
-                echo "⚠️  SSL installation failed or already exists"
-                echo "💡 Check: ls -la /etc/letsencrypt/live/$FULL_DOMAIN/"
-              fi
+              # Try to install SSL (will work if DNS is correct)
+              certbot --apache \
+                -d "$FULL_DOMAIN" \
+                --non-interactive \
+                --agree-tos \
+                --email "${{ secrets.SSL_EMAIL }}" \
+                --redirect \
+                --expand 2>&1 | grep -E "(Congratulations|already|ERROR)" || true
               
               sleep 2
             done
+
+            echo "✅ SSL installation attempts completed"
 
             systemctl reload apache2 2>/dev/null || echo "Apache reload completed"
 
@@ -393,7 +368,7 @@ jobs:
             echo ""
             echo "📋 Deployed sites:"
             ls -1 /var/www/previews/ 2>/dev/null | while read dir; do
-              echo "  🌐 https://preview-$dir.${{ secrets.MAIN_DOMAIN }}"
+              echo "  🌐 https://$dir.${{ secrets.MAIN_DOMAIN }}"
             done
 
       - name: Summary
