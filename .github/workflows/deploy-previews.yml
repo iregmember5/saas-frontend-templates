@@ -1,13 +1,21 @@
-name: Deploy Template Previews (Fixed)
+name: Deploy Template Previews
 
 on:
   push:
     branches: [main]
     paths:
       - "templates-frontend/**"
+      - ".github/workflows/deploy-previews.yml"
+  workflow_dispatch:
+    inputs:
+      deploy_all:
+        description: "Deploy all templates (not just changed)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  deploy-changed-templates:
+  deploy-templates:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,18 +27,29 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "20"
 
-      - name: Detect Changed Templates
+      - name: Detect Templates to Deploy
         id: detect
         run: |
-          echo "🔍 Detecting changed templates..."
+          echo "🔍 Detecting templates to deploy..."
 
+          # If manual trigger with deploy_all=true, deploy everything
+          if [ "${{ github.event.inputs.deploy_all }}" = "true" ]; then
+            echo "📦 Manual trigger: Deploying ALL templates"
+            ALL_TEMPLATES=$(ls -1 templates-frontend/ | grep -v "^\\." | tr '\n' ',' | sed 's/,$//')
+            echo "templates=$ALL_TEMPLATES" >> $GITHUB_OUTPUT
+            echo "deploy_all=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Detect changed templates
           CHANGED_DIRS=$(git diff --name-only HEAD^ HEAD | grep '^templates-frontend/' | cut -d'/' -f2 | sort -u)
 
           if [ -z "$CHANGED_DIRS" ]; then
-            echo "No templates changed"
-            echo "changed_templates=" >> $GITHUB_OUTPUT
+            echo "ℹ️  No templates changed"
+            echo "templates=" >> $GITHUB_OUTPUT
+            echo "deploy_all=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -38,18 +57,51 @@ jobs:
           echo "$CHANGED_DIRS"
 
           CHANGED_LIST=$(echo "$CHANGED_DIRS" | tr '\n' ',' | sed 's/,$//')
-          echo "changed_templates=$CHANGED_LIST" >> $GITHUB_OUTPUT
+          echo "templates=$CHANGED_LIST" >> $GITHUB_OUTPUT
+          echo "deploy_all=false" >> $GITHUB_OUTPUT
 
-      - name: Build and Package Templates
-        if: steps.detect.outputs.changed_templates != ''
-        env:
-          CHANGED_TEMPLATES: ${{ steps.detect.outputs.changed_templates }}
+      - name: Check Existing Deployments on VPS
+        if: steps.detect.outputs.templates == '' && steps.detect.outputs.deploy_all != 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Check if any previews are deployed
+            if [ ! -d "/var/www/previews" ] || [ -z "$(ls -A /var/www/previews 2>/dev/null)" ]; then
+              echo "NO_DEPLOYMENTS=true" > /tmp/deployment-status.txt
+            else
+              echo "NO_DEPLOYMENTS=false" > /tmp/deployment-status.txt
+            fi
+
+      - name: Decide Deployment Strategy
+        id: strategy
         run: |
-          echo "🚀 Starting builds for: $CHANGED_TEMPLATES"
+          # If no changes detected, check if we need initial deployment
+          if [ -z "${{ steps.detect.outputs.templates }}" ]; then
+            echo "ℹ️  No changed templates detected"
+            echo "🔍 Checking if initial deployment is needed..."
+            
+            # Deploy all templates on first run
+            ALL_TEMPLATES=$(ls -1 templates-frontend/ | grep -v "^\\." | tr '\n' ',' | sed 's/,$//')
+            echo "📦 Initial deployment: Deploying ALL templates"
+            echo "templates=$ALL_TEMPLATES" >> $GITHUB_OUTPUT
+            echo "is_initial=true" >> $GITHUB_OUTPUT
+          else
+            echo "templates=${{ steps.detect.outputs.templates }}" >> $GITHUB_OUTPUT
+            echo "is_initial=false" >> $GITHUB_OUTPUT
+          fi
 
-          IFS=',' read -ra TEMPLATES <<< "$CHANGED_TEMPLATES"
+      - name: Build Templates
+        if: steps.strategy.outputs.templates != ''
+        env:
+          TEMPLATES_TO_BUILD: ${{ steps.strategy.outputs.templates }}
+        run: |
+          echo "🚀 Building templates: $TEMPLATES_TO_BUILD"
 
-          # Create deployment directory
+          IFS=',' read -ra TEMPLATES <<< "$TEMPLATES_TO_BUILD"
+
           mkdir -p deployment-package
 
           for TEMPLATE in "${TEMPLATES[@]}"; do
@@ -68,29 +120,39 @@ jobs:
             echo "🔨 Building $TEMPLATE..."
             cd "$TEMPLATE_PATH"
             
-            # Install and build
-            npm ci || npm install
+            # Install dependencies
+            if npm ci 2>/dev/null || npm install; then
+              echo "✅ Dependencies installed"
+            else
+              echo "❌ Failed to install dependencies for $TEMPLATE"
+              cd ../..
+              continue
+            fi
             
+            # Build project
             if npm run build; then
               echo "✅ Build successful for $TEMPLATE"
               
-              # Copy dist to deployment package with proper structure
+              # Verify dist exists
+              if [ ! -d "dist" ]; then
+                echo "❌ Build completed but dist folder not found"
+                cd ../..
+                continue
+              fi
+              
+              # Copy to deployment package
               mkdir -p "../../deployment-package/$TEMPLATE"
               cp -r dist "../../deployment-package/$TEMPLATE/"
               
               # Create deployment marker
-              cat > "../../deployment-package/$TEMPLATE.env" << EOF
-            TEMPLATE=$TEMPLATE
-            BUILD_SUCCESS=true
-            BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-            EOF
-                          
-                        else
-                          echo "❌ Build failed for $TEMPLATE"
-                          cat > "../../deployment-package/$TEMPLATE.env" << EOF
-            TEMPLATE=$TEMPLATE
-            BUILD_SUCCESS=false
-            EOF
+              echo "TEMPLATE=$TEMPLATE" > "../../deployment-package/$TEMPLATE.env"
+              echo "BUILD_SUCCESS=true" >> "../../deployment-package/$TEMPLATE.env"
+              echo "BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "../../deployment-package/$TEMPLATE.env"
+              
+            else
+              echo "❌ Build failed for $TEMPLATE"
+              echo "TEMPLATE=$TEMPLATE" > "../../deployment-package/$TEMPLATE.env"
+              echo "BUILD_SUCCESS=false" >> "../../deployment-package/$TEMPLATE.env"
             fi
             
             cd ../..
@@ -98,14 +160,12 @@ jobs:
 
           echo ""
           echo "✅ All builds completed!"
-
-          # Show what we're uploading
           echo ""
           echo "📦 Deployment package contents:"
-          ls -lR deployment-package/
+          ls -lR deployment-package/ || echo "No deployment package created"
 
-      - name: Upload Deployment Package to VPS
-        if: steps.detect.outputs.changed_templates != ''
+      - name: Upload to VPS
+        if: steps.strategy.outputs.templates != ''
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -117,8 +177,8 @@ jobs:
           rm: true
           overwrite: true
 
-      - name: Deploy to VPS
-        if: steps.detect.outputs.changed_templates != ''
+      - name: Deploy on VPS
+        if: steps.strategy.outputs.templates != ''
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -130,23 +190,19 @@ jobs:
 
             echo "🚀 Starting VPS deployment..."
 
-            # Check if deployment package exists
             if [ ! -d "/tmp/deployment-package" ]; then
               echo "❌ Deployment package not found!"
               exit 1
             fi
 
-            # Create base directories
             mkdir -p /var/www/previews
             mkdir -p /var/log/template-deployments
 
-            # Process each deployment
             for ENV_FILE in /tmp/deployment-package/*.env; do
               if [ ! -f "$ENV_FILE" ]; then
                 continue
               fi
               
-              # Load deployment info
               source "$ENV_FILE"
               
               if [ "$BUILD_SUCCESS" != "true" ]; then
@@ -159,7 +215,6 @@ jobs:
               echo "📦 Deploying: $TEMPLATE"
               echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
               
-              # Generate subdomain (remove -template suffix)
               SUBDOMAIN=$(echo "$TEMPLATE" | sed 's/-template$//')
               SUBDOMAIN="preview-$SUBDOMAIN"
               
@@ -170,38 +225,34 @@ jobs:
               echo "🌐 Domain: $FULL_DOMAIN"
               echo "📁 Deploy to: $DEPLOY_DIR"
               
-              # Verify source exists
               SOURCE_DIR="/tmp/deployment-package/$TEMPLATE/dist"
+              
               if [ ! -d "$SOURCE_DIR" ]; then
-                echo "❌ Source directory not found: $SOURCE_DIR"
-                ls -la /tmp/deployment-package/$TEMPLATE/ || true
+                echo "❌ Source not found: $SOURCE_DIR"
+                ls -la /tmp/deployment-package/$TEMPLATE/ 2>/dev/null || true
                 continue
               fi
               
-              echo "📦 Source verified: $SOURCE_DIR"
+              echo "✅ Source verified: $SOURCE_DIR"
               
-              # Create deployment directory
               mkdir -p "$DEPLOY_DIR"
               
-              # Copy build files
-              echo "📦 Copying build files..."
+              echo "📦 Copying files..."
               rsync -av --delete "$SOURCE_DIR/" "$DEPLOY_DIR/"
               
-              # Set permissions
               chown -R www-data:www-data "$DEPLOY_DIR"
               chmod -R 755 "$DEPLOY_DIR"
               
-              # Verify deployment
-              if [ -f "$DEPLOY_DIR/index.html" ]; then
-                echo "✅ Files deployed successfully"
-              else
-                echo "❌ Deployment verification failed - index.html not found"
+              if [ ! -f "$DEPLOY_DIR/index.html" ]; then
+                echo "❌ Deployment failed - index.html not found"
                 continue
               fi
               
-              # Generate Apache config
-              echo "⚙️  Generating Apache config..."
-              cat > "/etc/apache2/sites-available/$SUBDOMAIN.conf" << EOF
+              echo "✅ Files deployed successfully"
+              
+              echo "⚙️  Configuring Apache..."
+              
+              cat > "/etc/apache2/sites-available/$SUBDOMAIN.conf" <<APACHECONF
             <VirtualHost *:80>
                 ServerName $FULL_DOMAIN
                 ServerAlias www.$FULL_DOMAIN
@@ -213,26 +264,22 @@ jobs:
                     Require all granted
                 </Directory>
                 
-                # React Router fallback
                 <IfModule mod_rewrite.c>
                     RewriteEngine On
                     RewriteCond %{REQUEST_FILENAME} !-f
                     RewriteCond %{REQUEST_FILENAME} !-d
-                    RewriteCond %{REQUEST_URI} !^/index\.html$
+                    RewriteCond %{REQUEST_URI} !^/index\\.html$
                     RewriteRule ^ /index.html [L]
                 </IfModule>
                 
-                # Security headers
                 Header always set X-Frame-Options "SAMEORIGIN"
                 Header always set X-Content-Type-Options "nosniff"
                 Header always set X-XSS-Protection "1; mode=block"
                 
-                # Compression
                 <IfModule mod_deflate.c>
                     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
                 </IfModule>
                 
-                # Browser caching
                 <IfModule mod_expires.c>
                     ExpiresActive On
                     ExpiresByType image/jpg "access plus 1 year"
@@ -248,38 +295,31 @@ jobs:
                 ErrorLog \${APACHE_LOG_DIR}/$SUBDOMAIN-error.log
                 CustomLog \${APACHE_LOG_DIR}/$SUBDOMAIN-access.log combined
             </VirtualHost>
-            EOF
+            APACHECONF
               
-              # Enable site
               a2ensite "$SUBDOMAIN.conf" 2>/dev/null || true
               
-              # Log deployment
-              echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | $TEMPLATE | $FULL_DOMAIN | SUCCESS" \
-                >> /var/log/template-deployments/deployments.log
+              echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | $TEMPLATE | $FULL_DOMAIN | SUCCESS" >> /var/log/template-deployments/deployments.log
               
-              echo "✅ Deployed to: http://$FULL_DOMAIN"
+              echo "✅ Deployed: http://$FULL_DOMAIN"
             done
 
-            # Test Apache configuration
             echo ""
-            echo "🔍 Testing Apache configuration..."
+            echo "🔍 Testing Apache..."
+
             if apache2ctl configtest 2>&1 | grep -q "Syntax OK"; then
-              echo "✅ Apache config is valid"
-              
-              echo "🔄 Reloading Apache..."
+              echo "✅ Apache config valid"
               systemctl reload apache2
-              echo "✅ Apache reloaded successfully"
+              echo "✅ Apache reloaded"
             else
-              echo "❌ Apache config has errors"
+              echo "❌ Apache config error"
               apache2ctl configtest
               exit 1
             fi
 
             echo ""
-            echo "🔐 SSL Certificate Setup"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🔐 Setting up SSL..."
 
-            # SSL installation for each template
             for ENV_FILE in /tmp/deployment-package/*.env; do
               if [ ! -f "$ENV_FILE" ]; then
                 continue
@@ -299,66 +339,49 @@ jobs:
               echo ""
               echo "🔒 Checking SSL for: $FULL_DOMAIN"
               
-              # Check DNS
               DOMAIN_IP=$(dig +short $FULL_DOMAIN @8.8.8.8 | tail -n1)
               SERVER_IP=$(curl -s ifconfig.me)
               
               if [ -z "$DOMAIN_IP" ]; then
-                echo "⚠️  DNS not propagated yet, skipping SSL"
-                echo "   Run manually: sudo certbot --apache -d $FULL_DOMAIN"
+                echo "⚠️  DNS not ready, skip SSL"
                 continue
               fi
               
               if [ "$DOMAIN_IP" != "$SERVER_IP" ]; then
-                echo "⚠️  Domain points to $DOMAIN_IP, server is $SERVER_IP"
-                echo "   Update DNS and run: sudo certbot --apache -d $FULL_DOMAIN"
+                echo "⚠️  DNS mismatch ($DOMAIN_IP != $SERVER_IP)"
                 continue
               fi
               
               echo "✅ DNS verified, installing SSL..."
               
-              certbot --apache \
-                -d "$FULL_DOMAIN" \
-                --non-interactive \
-                --agree-tos \
-                --email "${{ secrets.SSL_EMAIL }}" \
-                --redirect \
-                --expand \
-                2>&1 | tee /var/log/template-deployments/ssl-$SUBDOMAIN.log
-              
-              if [ ${PIPESTATUS[0]} -eq 0 ]; then
+              if certbot --apache -d "$FULL_DOMAIN" --non-interactive --agree-tos --email "${{ secrets.SSL_EMAIL }}" --redirect --expand 2>&1 | tee /var/log/template-deployments/ssl-$SUBDOMAIN.log; then
                 echo "✅ SSL installed for $FULL_DOMAIN"
-                echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | $TEMPLATE | $FULL_DOMAIN | SSL_SUCCESS" \
-                  >> /var/log/template-deployments/deployments.log
               else
                 echo "⚠️  SSL failed for $FULL_DOMAIN"
-                echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | $TEMPLATE | $FULL_DOMAIN | SSL_FAILED" \
-                  >> /var/log/template-deployments/deployments.log
               fi
               
               sleep 2
             done
 
-            echo ""
-            echo "🔄 Final Apache reload..."
             systemctl reload apache2
 
-            # Cleanup
             rm -rf /tmp/deployment-package
 
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🎉 Deployment Complete!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
             echo ""
-            echo "📋 Deployed Sites:"
-            apache2ctl -S 2>&1 | grep "namevhost" | grep "preview-" | awk '{print "  🌐 https://" $4}'
+            echo "📋 Deployed sites:"
+            ls -1 /var/www/previews/ 2>/dev/null | while read dir; do
+              echo "  🌐 https://preview-$dir.${{ secrets.MAIN_DOMAIN }}"
+            done
 
-      - name: Deployment Summary
+      - name: Summary
         if: always()
         run: |
           echo ""
           echo "📊 Deployment Summary"
           echo "===================="
-          echo "Changed templates: ${{ steps.detect.outputs.changed_templates }}"
+          echo "Templates: ${{ steps.strategy.outputs.templates }}"
+          echo "Initial deployment: ${{ steps.strategy.outputs.is_initial }}"

@@ -13,7 +13,6 @@ function App() {
     slug?: string;
   }>({ type: "landing" });
 
-  // Simple URL-based routing
   useEffect(() => {
     const checkRoute = () => {
       const path = window.location.pathname;
