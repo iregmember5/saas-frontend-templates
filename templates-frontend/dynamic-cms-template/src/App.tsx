@@ -7,7 +7,7 @@ import DebugFeaturesAPI from "./pages/DebugFeaturesApi";
 import DebugLandingAPI from "./pages/DebugLandingApi";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { loadTenantData, applyTenantStyles } from "./tenantLoader";
-// app
+
 function App() {
   const [tenant, setTenant] = useState(null);
   const [loading, setLoading] = useState(true);

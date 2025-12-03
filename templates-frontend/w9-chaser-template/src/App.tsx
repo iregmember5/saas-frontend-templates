@@ -38,7 +38,6 @@ function App() {
         return;
       }
 
-      // Check if we're on a blog post page
       if (path.includes("/blog/") || hash.includes("#blog/")) {
         const slugMatch =
           path.match(/\/blog\/([^\/]+)/) || hash.match(/#blog\/([^\/]+)/);

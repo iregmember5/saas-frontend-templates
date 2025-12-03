@@ -351,14 +351,14 @@ jobs:
 
             echo "✅ SSL installation attempts completed"
 
-               # Simple MIME check for all sites
+            # Simple MIME check for all sites
             echo ""
             echo "🔍 Final MIME type verification..."
-            for dir in /var/www/previews/preview-* 2>/dev/null; do
+            for dir in /var/www/previews/preview-*; do
+              [ -d "$dir" ] || continue
               SITE=$(basename "$dir")
               echo -n "Checking $SITE: "
-              curl -s -I "https://$SITE.$MAIN_DOMAIN/assets/index-*.js" 2>/dev/null | \
-                grep -i "content-type" | head -1 || echo "Check completed"
+              curl -s -I "https://$SITE.$MAIN_DOMAIN/assets/index-*.js" 2>/dev/null | grep -i "content-type" | head -1 || echo "Check completed"
             done
 
             systemctl reload apache2 2>/dev/null || echo "Apache reload completed"
