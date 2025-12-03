@@ -249,53 +249,119 @@ jobs:
               fi
               
               echo "✅ Files deployed successfully"
+
+              # Create .htaccess file for React Router
+              cat > "$DEPLOY_DIR/.htaccess" << 'HTACCESS'
+              # React Router configuration
+              RewriteEngine On
+              RewriteBase /
+              
+              # Don't rewrite files or directories
+              RewriteCond %{REQUEST_FILENAME} -f [OR]
+              RewriteCond %{REQUEST_FILENAME} -d
+              RewriteRule ^ - [L]
+              
+              # Rewrite everything else to index.html
+              RewriteRule ^ index.html [L]
+              
+              # MIME types (in case Apache config doesn't load)
+              AddType application/javascript .js
+              AddType text/css .css
+              AddType image/svg+xml .svg
+              AddType application/json .json
+              HTACCESS
+              
+              chmod 644 "$DEPLOY_DIR/.htaccess"
+              echo "✅ .htaccess created for React Router"
               
               echo "⚙️  Configuring Apache..."
               
               cat > "/etc/apache2/sites-available/$SUBDOMAIN.conf" <<APACHECONF
-            <VirtualHost *:80>
-                ServerName $FULL_DOMAIN
-                ServerAlias www.$FULL_DOMAIN
-                DocumentRoot $DEPLOY_DIR
-                
-                <Directory $DEPLOY_DIR>
-                    Options -Indexes +FollowSymLinks
-                    AllowOverride All
-                    Require all granted
-                </Directory>
-                
-                <IfModule mod_rewrite.c>
-                    RewriteEngine On
-                    RewriteCond %{REQUEST_FILENAME} !-f
-                    RewriteCond %{REQUEST_FILENAME} !-d
-                    RewriteCond %{REQUEST_URI} !^/index\\.html$
-                    RewriteRule ^ /index.html [L]
-                </IfModule>
-                
-                Header always set X-Frame-Options "SAMEORIGIN"
-                Header always set X-Content-Type-Options "nosniff"
-                Header always set X-XSS-Protection "1; mode=block"
-                
-                <IfModule mod_deflate.c>
-                    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
-                </IfModule>
-                
-                <IfModule mod_expires.c>
-                    ExpiresActive On
-                    ExpiresByType image/jpg "access plus 1 year"
-                    ExpiresByType image/jpeg "access plus 1 year"
-                    ExpiresByType image/gif "access plus 1 year"
-                    ExpiresByType image/png "access plus 1 year"
-                    ExpiresByType image/svg+xml "access plus 1 year"
-                    ExpiresByType text/css "access plus 1 month"
-                    ExpiresByType application/javascript "access plus 1 month"
-                    ExpiresByType text/html "access plus 0 seconds"
-                </IfModule>
-                
-                ErrorLog \${APACHE_LOG_DIR}/$SUBDOMAIN-error.log
-                CustomLog \${APACHE_LOG_DIR}/$SUBDOMAIN-access.log combined
-            </VirtualHost>
-            APACHECONF
+              <VirtualHost *:80>
+                  ServerName $FULL_DOMAIN
+                  ServerAlias www.$FULL_DOMAIN
+                  DocumentRoot $DEPLOY_DIR
+                  
+                  <Directory $DEPLOY_DIR>
+                      Options -Indexes +FollowSymLinks +MultiViews
+                      AllowOverride All
+                      Require all granted
+                      
+                      # REACT ROUTER FIX: Proper rewrite rules
+                      <IfModule mod_rewrite.c>
+                          RewriteEngine On
+                          RewriteBase /
+                          
+                          # Handle static files first
+                          RewriteCond %{REQUEST_FILENAME} -f [OR]
+                          RewriteCond %{REQUEST_FILENAME} -d
+                          RewriteRule ^ - [L]
+                          
+                          # Handle everything else (React Router)
+                          RewriteRule ^ index.html [L]
+                      </IfModule>
+                      
+                      # Enable .htaccess overrides
+                      FallbackResource /index.html
+                  </Directory>
+                  
+                  # CRITICAL: MIME types for React/Vite apps
+                  AddType application/javascript .js
+                  AddType application/javascript .mjs
+                  AddType text/css .css
+                  AddType image/svg+xml .svg
+                  AddType application/json .json
+                  AddType font/woff2 .woff2
+                  AddType font/woff .woff
+                  AddType font/ttf .ttf
+                  
+                  # Vite-specific MIME types
+                  AddType text/javascript .js
+                  AddType text/css .css
+                  
+                  # Security headers
+                  Header always set X-Frame-Options "SAMEORIGIN"
+                  Header always set X-Content-Type-Options "nosniff"
+                  Header always set X-XSS-Protection "1; mode=block"
+                  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+                  
+                  # Compression
+                  <IfModule mod_deflate.c>
+                      AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+                      AddOutputFilterByType DEFLATE application/javascript application/json
+                      AddOutputFilterByType DEFLATE image/svg+xml
+                  </IfModule>
+                  
+                  # Caching
+                  <IfModule mod_expires.c>
+                      ExpiresActive On
+                      
+                      # JavaScript and CSS
+                      ExpiresByType application/javascript "access plus 1 year"
+                      ExpiresByType text/css "access plus 1 year"
+                      
+                      # Images
+                      ExpiresByType image/jpg "access plus 1 year"
+                      ExpiresByType image/jpeg "access plus 1 year"
+                      ExpiresByType image/gif "access plus 1 year"
+                      ExpiresByType image/png "access plus 1 year"
+                      ExpiresByType image/svg+xml "access plus 1 year"
+                      ExpiresByType image/webp "access plus 1 year"
+                      ExpiresByType image/avif "access plus 1 year"
+                      
+                      # Fonts
+                      ExpiresByType font/woff "access plus 1 year"
+                      ExpiresByType font/woff2 "access plus 1 year"
+                      ExpiresByType application/font-woff "access plus 1 year"
+                      
+                      # HTML (no caching)
+                      ExpiresByType text/html "access plus 0 seconds"
+                  </IfModule>
+                  
+                  ErrorLog \${APACHE_LOG_DIR}/$SUBDOMAIN-error.log
+                  CustomLog \${APACHE_LOG_DIR}/$SUBDOMAIN-access.log combined
+              </VirtualHost>
+              APACHECONF
               
               a2ensite "$SUBDOMAIN.conf" 2>/dev/null || true
               
@@ -338,7 +404,7 @@ jobs:
               
               # Generate correct domain name
               SUBDOMAIN=$(echo "$TEMPLATE" | sed 's/-template$//')
-              [[ ! "$SUBDOMAIN" =~ ^preview- ]] && SUBDOMAIN="preview-$SUBDOMAIN"
+              echo "$SUBDOMAIN" | grep -q "^preview-" || SUBDOMAIN="preview-$SUBDOMAIN"
               FULL_DOMAIN="$SUBDOMAIN.$MAIN_DOMAIN"
               
               echo "📝 Installing SSL for: $FULL_DOMAIN"
@@ -357,6 +423,16 @@ jobs:
 
             echo "✅ SSL installation attempts completed"
 
+               # Simple MIME check for all sites
+            echo ""
+            echo "🔍 Final MIME type verification..."
+            for dir in /var/www/previews/preview-* 2>/dev/null; do
+              SITE=$(basename "$dir")
+              echo -n "Checking $SITE: "
+              curl -s -I "https://$SITE.$MAIN_DOMAIN/assets/index-*.js" 2>/dev/null | \
+                grep -i "content-type" | head -1 || echo "Check completed"
+            done
+
             systemctl reload apache2 2>/dev/null || echo "Apache reload completed"
 
             rm -rf /tmp/deployment-package
@@ -365,6 +441,7 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "🎉 Deployment Complete!"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
             echo ""
             echo "📋 Deployed sites:"
             ls -1 /var/www/previews/ 2>/dev/null | while read dir; do

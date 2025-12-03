@@ -74,7 +74,6 @@ function App() {
 
     checkRoute();
 
-    // Listen for hash changes (for navigation without page reload)
     window.addEventListener("hashchange", checkRoute);
     window.addEventListener("popstate", checkRoute);
 
