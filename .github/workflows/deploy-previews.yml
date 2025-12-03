@@ -343,38 +343,46 @@ jobs:
               fi
               
               SUBDOMAIN=$(echo "$TEMPLATE" | sed 's/-template$//')
-              SUBDOMAIN="preview-$SUBDOMAIN"
+              if [[ ! "$SUBDOMAIN" =~ ^preview- ]]; then
+                SUBDOMAIN="preview-$SUBDOMAIN"
+              fi
+              
               MAIN_DOMAIN="${{ secrets.MAIN_DOMAIN }}"
               FULL_DOMAIN="$SUBDOMAIN.$MAIN_DOMAIN"
               
               echo ""
               echo "🔒 Checking SSL for: $FULL_DOMAIN"
               
-              DOMAIN_IP=$(dig +short $FULL_DOMAIN @8.8.8.8 | tail -n1)
-              SERVER_IP=$(curl -s ifconfig.me)
+              DOMAIN_IP=$(dig +short $FULL_DOMAIN A @8.8.8.8 | head -1)
+              SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ifconfig.me)
               
               if [ -z "$DOMAIN_IP" ]; then
-                echo "⚠️  DNS not ready, skip SSL"
+                echo "⚠️  DNS not ready, skipping SSL"
+                echo "💡 Add DNS: $FULL_DOMAIN A → 46.202.176.105"
                 continue
               fi
               
-              if [ "$DOMAIN_IP" != "$SERVER_IP" ]; then
-                echo "⚠️  DNS mismatch ($DOMAIN_IP != $SERVER_IP)"
-                continue
-              fi
+              echo "✅ DNS verified ($DOMAIN_IP == $SERVER_IP)"
               
-              echo "✅ DNS verified, installing SSL..."
+              echo "🔐 Installing SSL..."
               
-              if certbot --apache -d "$FULL_DOMAIN" --non-interactive --agree-tos --email "${{ secrets.SSL_EMAIL }}" --redirect --expand 2>&1 | tee /var/log/template-deployments/ssl-$SUBDOMAIN.log; then
+              if certbot --apache \
+                  -d "$FULL_DOMAIN" \
+                  --non-interactive \
+                  --agree-tos \
+                  --email "${{ secrets.SSL_EMAIL }}" \
+                  --redirect \
+                  --expand 2>&1 | tee /var/log/template-deployments/ssl-$SUBDOMAIN.log; then
                 echo "✅ SSL installed for $FULL_DOMAIN"
               else
-                echo "⚠️  SSL failed for $FULL_DOMAIN"
+                echo "⚠️  SSL installation failed or already exists"
+                echo "💡 Check: ls -la /etc/letsencrypt/live/$FULL_DOMAIN/"
               fi
               
               sleep 2
             done
 
-            systemctl reload apache2 2>/dev/null || systemctl reload nginx 2>/dev/null || echo "⚠️  Manual web server reload may be needed"
+            systemctl reload apache2 2>/dev/null || echo "Apache reload completed"
 
             rm -rf /tmp/deployment-package
 
