@@ -83,7 +83,6 @@ function App() {
     };
   }, []);
 
-  // Render based on current view
   if (currentView.type === "blog") {
     return (
       <ThemeProvider>
