@@ -27,7 +27,6 @@ const DebugFeaturesAPI = () => {
         };
   });
 
-  // Auto detect dark mode for initial load
   useEffect(() => {
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)"

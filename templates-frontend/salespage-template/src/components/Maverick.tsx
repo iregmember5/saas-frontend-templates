@@ -50,7 +50,7 @@ export default function TaxAdvisorLandingPage() {
     Promise.all([
       fetchLandingPageData(),
       fetchAllFeaturesPages(),
-      fetchWorkbookPageData()
+      fetchWorkbookPageData(),
     ])
       .then(([landingData, featuresData, workbookData]) => {
         setPageData(landingData);
@@ -61,8 +61,8 @@ export default function TaxAdvisorLandingPage() {
       .catch(console.error);
   }, []);
 
-  console.log('Landing Page Data:', pageData);
-  console.log('Features Pages Data:', featuresData);
+  console.log("Landing Page Data:", pageData);
+  console.log("Features Pages Data:", featuresData);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -88,26 +88,6 @@ export default function TaxAdvisorLandingPage() {
 
     return () => clearInterval(timer);
   }, []);
-
-  // const speakers = [
-  //   { name: "DAVID A. PEREZ", image: "/david.webp" },
-  //   { name: "DANIEL TAPIA", image: "/daniel.webp" },
-  //   { name: "GEORGE NIÑO", image: "/george.webp" },
-  //   { name: "RUTH CREAPO", image: "/ruth.webp" },
-  // ];
-
-  // const faqs = [
-  //   "What if I miss the live event? Will the workshop still be free for me?",
-  //   "Do I need to have software systems in place yet?",
-  //   "What can I learn in the tax advisory niche? What if I want just deductions?",
-  //   "What's the time commitment?",
-  //   "Can this work even with $0 STARTING CAPITAL (no existing services)?",
-  //   "What if I am a sole practitioner or brand new starting out how will this help?",
-  //   "Is this for beginners or advanced too?",
-  //   "Will this show me what exactly to say/do or just AI tools?",
-  //   "Can you walk everybody step by step concept?",
-  //   "How much time will it take? We would find the class all times or just?",
-  // ];
 
   if (showWorkbook) {
     return <Workbook data={workbookData} />;

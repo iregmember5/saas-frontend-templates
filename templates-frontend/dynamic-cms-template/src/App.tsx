@@ -18,7 +18,7 @@ function App() {
 
   useEffect(() => {
     loadTenantData()
-      .then(data => {
+      .then((data) => {
         setTenant(data);
         applyTenantStyles(data);
       })
@@ -97,7 +97,6 @@ function App() {
   if (loading) return <div>Loading...</div>;
   if (!tenant) return <div>Tenant not found</div>;
 
-  // Render based on current view
   if (currentView.type === "blog") {
     return (
       <ThemeProvider>

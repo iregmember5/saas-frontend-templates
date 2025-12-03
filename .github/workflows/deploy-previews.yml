@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "20.x"
 
       - name: Detect Templates to Deploy
         id: detect
@@ -309,8 +309,19 @@ jobs:
 
             if apache2ctl configtest 2>&1 | grep -q "Syntax OK"; then
               echo "✅ Apache config valid"
-              systemctl reload apache2
-              echo "✅ Apache reloaded"
+              
+              echo "🔄 Reloading web server..."
+              if systemctl reload apache2 2>/dev/null; then
+                echo "✅ Apache reloaded"
+              elif systemctl reload nginx 2>/dev/null; then
+                echo "✅ Nginx reloaded"
+              elif service apache2 reload 2>/dev/null; then
+                echo "✅ Apache reloaded via service"
+              else
+                echo "⚠️  Auto-reload failed (CloudPanel may be managing)"
+                echo "📝 Sites deployed successfully, manual reload may be needed"
+                echo "   Run: sudo systemctl reload apache2"
+              fi
             else
               echo "❌ Apache config error"
               apache2ctl configtest
@@ -363,7 +374,7 @@ jobs:
               sleep 2
             done
 
-            systemctl reload apache2
+            systemctl reload apache2 2>/dev/null || systemctl reload nginx 2>/dev/null || echo "⚠️  Manual web server reload may be needed"
 
             rm -rf /tmp/deployment-package
 
