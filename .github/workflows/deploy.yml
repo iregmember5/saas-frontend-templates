@@ -124,7 +124,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "templates-frontend/${{ env.TEMPLATE }}/dist/*"
           target: "/var/www/saas-deployments/${{ env.USER_ID }}/dist/"
-          strip_components: 4
+          strip_components: 3
           rm: true
           overwrite: true
 
