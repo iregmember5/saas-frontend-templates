@@ -178,6 +178,23 @@ jobs:
 
             echo "✅ Upload verified successfully"
 
+      # 🔧 ENABLE APACHE MODULES
+      - name: Enable Required Apache Modules
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🔧 Enabling required Apache modules..."
+            a2enmod rewrite
+            a2enmod headers
+            a2enmod deflate
+            a2enmod expires
+            systemctl restart apache2
+            echo "✅ Apache modules enabled"
+
       # 🔥 CONFIGURE APACHE
       - name: Configure Apache Virtual Host
         id: apache
