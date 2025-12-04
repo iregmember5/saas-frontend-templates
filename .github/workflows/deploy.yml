@@ -271,8 +271,12 @@ jobs:
             a2ensite ${USER_ID}.conf
 
             # Test Apache configuration
-            if ! apache2ctl configtest 2>&1 | grep -q "Syntax OK"; then
+            if ! apache2ctl configtest; then
               echo "❌ Apache configuration test failed"
+              echo "Checking Apache error log:"
+              tail -20 /var/log/apache2/error.log
+              echo "Checking configuration syntax:"
+              apache2ctl -S
               a2dissite ${USER_ID}.conf
               systemctl reload apache2
               exit 1
