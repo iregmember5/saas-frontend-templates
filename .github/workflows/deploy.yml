@@ -177,6 +177,25 @@ jobs:
             fi
 
             echo "✅ Upload verified successfully"
+            echo "Deployed files:"
+            ls -lah "$DEPLOY_DIR"
+
+      # 🔧 DISABLE DEFAULT APACHE SITE (FIX FOR "Apache is working" PAGE)
+      - name: Disable Default Apache Sites
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "🔧 Disabling default Apache sites that might interfere..."
+            
+            # Disable default sites
+            a2dissite 000-default.conf 2>/dev/null || echo "000-default already disabled"
+            a2dissite default-ssl.conf 2>/dev/null || echo "default-ssl already disabled"
+            
+            echo "✅ Default sites disabled"
 
       # 🔧 ENABLE APACHE MODULES
       - name: Enable Required Apache Modules
@@ -192,10 +211,11 @@ jobs:
             a2enmod headers
             a2enmod deflate
             a2enmod expires
+            a2enmod ssl
             systemctl restart apache2
             echo "✅ Apache modules enabled"
 
-      # 🔥 CONFIGURE APACHE
+      # 🔥 CONFIGURE APACHE WITH PROPER PRIORITY
       - name: Configure Apache Virtual Host
         id: apache
         if: success()
@@ -210,8 +230,8 @@ jobs:
 
             echo "🌐 Configuring Apache for $DOMAIN..."
 
-            # Create Apache configuration
-            cat > /etc/apache2/sites-available/${USER_ID}.conf << 'EOF'
+            # Create Apache configuration with higher priority (001- prefix)
+            cat > /etc/apache2/sites-available/001-${USER_ID}.conf << 'EOF'
             <VirtualHost *:80>
                 ServerName DOMAIN_PLACEHOLDER
                 ServerAlias www.DOMAIN_PLACEHOLDER
@@ -228,15 +248,15 @@ jobs:
                     Header always set X-XSS-Protection "1; mode=block"
                 </Directory>
                 
-              # React Router fallback
-              <IfModule mod_rewrite.c>
-                  RewriteEngine On
-                  RewriteCond %{REQUEST_FILENAME} !-f
-                  RewriteCond %{REQUEST_FILENAME} !-d
-                  RewriteCond %{REQUEST_URI} !^/index\.html$
-                  RewriteRule . /index.html [L]
-              </IfModule>
-
+                # React Router fallback - CRITICAL FIX
+                <IfModule mod_rewrite.c>
+                    RewriteEngine On
+                    RewriteBase /
+                    RewriteCond %{REQUEST_FILENAME} !-f
+                    RewriteCond %{REQUEST_FILENAME} !-d
+                    RewriteCond %{REQUEST_URI} !^/index\.html$
+                    RewriteRule . /index.html [L]
+                </IfModule>
                 
                 # Enable compression
                 <IfModule mod_deflate.c>
@@ -261,14 +281,16 @@ jobs:
             EOF
 
             # Replace placeholders
-            sed -i "s|DOMAIN_PLACEHOLDER|$DOMAIN|g" /etc/apache2/sites-available/${USER_ID}.conf
-            sed -i "s|USER_ID_PLACEHOLDER|$USER_ID|g" /etc/apache2/sites-available/${USER_ID}.conf
+            sed -i "s|DOMAIN_PLACEHOLDER|$DOMAIN|g" /etc/apache2/sites-available/001-${USER_ID}.conf
+            sed -i "s|USER_ID_PLACEHOLDER|$USER_ID|g" /etc/apache2/sites-available/001-${USER_ID}.conf
 
-            # Disable site if already enabled (to avoid conflicts)
+            # Remove old config if exists
             a2dissite ${USER_ID}.conf 2>/dev/null || true
+            a2dissite 001-${USER_ID}.conf 2>/dev/null || true
+            rm -f /etc/apache2/sites-available/${USER_ID}.conf
 
-            # Enable site
-            a2ensite ${USER_ID}.conf
+            # Enable new site
+            a2ensite 001-${USER_ID}.conf
 
             # Test Apache configuration
             if ! apache2ctl configtest; then
@@ -277,7 +299,7 @@ jobs:
               tail -20 /var/log/apache2/error.log
               echo "Checking configuration syntax:"
               apache2ctl -S
-              a2dissite ${USER_ID}.conf
+              a2dissite 001-${USER_ID}.conf
               systemctl reload apache2
               exit 1
             fi
@@ -286,6 +308,9 @@ jobs:
             systemctl reload apache2
 
             echo "✅ Apache configured successfully for $DOMAIN"
+            echo ""
+            echo "Active virtual hosts:"
+            apache2ctl -S | grep "$DOMAIN"
 
       - name: Rollback on Apache Failure
         if: failure() && steps.apache.outcome == 'failure'
@@ -298,6 +323,7 @@ jobs:
             echo "⚠️ Apache configuration failed! Rolling back..."
 
             # Disable failed site
+            a2dissite 001-${{ env.USER_ID }}.conf 2>/dev/null || true
             a2dissite ${{ env.USER_ID }}.conf 2>/dev/null || true
 
             # Reload Apache
@@ -309,7 +335,7 @@ jobs:
               -d '{"status": "failed", "stage": "apache", "user_id": "${{ env.USER_ID }}", "error": "Apache configuration failed"}'
             exit 1
 
-      # 🔥 SETUP SSL CERTIFICATE
+      # 🔥 IMPROVED SSL SETUP WITH IPv4/IPv6 HANDLING
       - name: Setup SSL Certificate
         if: success()
         uses: appleboy/ssh-action@v1.0.3
@@ -322,17 +348,40 @@ jobs:
 
             echo "🔐 Setting up SSL for $DOMAIN..."
 
-            # Wait a moment for DNS propagation
+            # Wait for DNS propagation
             sleep 5
 
-            # Check if domain resolves to this server
-            DOMAIN_IP=$(dig +short $DOMAIN 2>/dev/null | grep -E '^[0-9.]+$' | head -n1)
-            SERVER_IP=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+            # Get server's primary IPv4 address
+            SERVER_IPv4=$(ip -4 addr show | grep inet | grep -v 127.0.0.1 | awk '{print $2}' | cut -d'/' -f1 | head -1)
+            
+            # Get domain's A record (IPv4)
+            DOMAIN_IPv4=$(dig +short $DOMAIN A 2>/dev/null | grep -E '^[0-9.]+$' | head -n1)
+            
+            # Get domain's AAAA record (IPv6)
+            DOMAIN_IPv6=$(dig +short $DOMAIN AAAA 2>/dev/null | head -n1)
+            
+            # Get server's IPv6
+            SERVER_IPv6=$(ip -6 addr show | grep inet6 | grep -v ::1 | grep -v fe80 | awk '{print $2}' | cut -d'/' -f1 | head -1)
 
-            echo "Domain IP: $DOMAIN_IP"
-            echo "Server IP: $SERVER_IP"
+            echo "Server IPv4: $SERVER_IPv4"
+            echo "Server IPv6: $SERVER_IPv6"
+            echo "Domain IPv4: $DOMAIN_IPv4"
+            echo "Domain IPv6: $DOMAIN_IPv6"
 
-            if [ -n "$DOMAIN_IP" ] && [ "$DOMAIN_IP" = "$SERVER_IP" ]; then
+            # Check if domain points to this server (IPv4 OR IPv6)
+            DNS_MATCH=0
+            
+            if [ -n "$DOMAIN_IPv4" ] && [ "$DOMAIN_IPv4" = "$SERVER_IPv4" ]; then
+              echo "✅ Domain IPv4 matches server"
+              DNS_MATCH=1
+            fi
+            
+            if [ -n "$DOMAIN_IPv6" ] && [ "$DOMAIN_IPv6" = "$SERVER_IPv6" ]; then
+              echo "✅ Domain IPv6 matches server"
+              DNS_MATCH=1
+            fi
+
+            if [ $DNS_MATCH -eq 1 ]; then
               echo "✅ Domain points to this server. Installing SSL..."
               
               # Get SSL certificate
@@ -346,17 +395,42 @@ jobs:
                 --expand \
                 2>&1 | tee /tmp/certbot-output.log
               
-              if [ ${PIPESTATUS[0]} -eq 0 ]; then
+              CERTBOT_EXIT=$?
+              
+              if [ $CERTBOT_EXIT -eq 0 ]; then
                 echo "✅ SSL certificate installed successfully"
+                
+                # Verify SSL is working
+                if [ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
+                  echo "✅ SSL certificate files found"
+                else
+                  echo "⚠️ SSL certificate files not found"
+                fi
               else
                 echo "⚠️ SSL installation had issues. Check logs."
                 cat /tmp/certbot-output.log
+                echo ""
+                echo "📝 Manual SSL command:"
+                echo "certbot --apache -d $DOMAIN -d www.$DOMAIN --email ${{ secrets.SSL_EMAIL }}"
               fi
             else
-              echo "⚠️ Domain not pointing to this server yet."
-              echo "Please point $DOMAIN to $SERVER_IP"
-              echo "Then run manually: certbot --apache -d $DOMAIN -d www.$DOMAIN"
-              echo "Site is accessible via HTTP for now."
+              echo "⚠️ Domain DNS does not point to this server yet."
+              echo ""
+              echo "🔧 DNS Configuration Needed:"
+              
+              if [ -n "$SERVER_IPv4" ]; then
+                echo "Add A record: $DOMAIN -> $SERVER_IPv4"
+              fi
+              
+              if [ -n "$SERVER_IPv6" ]; then
+                echo "Add AAAA record: $DOMAIN -> $SERVER_IPv6"
+              fi
+              
+              echo ""
+              echo "After updating DNS, wait 5-10 minutes then run:"
+              echo "certbot --apache -d $DOMAIN -d www.$DOMAIN --email ${{ secrets.SSL_EMAIL }}"
+              echo ""
+              echo "Site is accessible via HTTP for now: http://$DOMAIN"
             fi
         continue-on-error: true
 
@@ -383,6 +457,39 @@ jobs:
             find "$DEPLOY_DIR" -type f -exec chmod 644 {} \;
 
             echo "✅ Permissions set correctly"
+
+      # 🔥 TEST DEPLOYMENT
+      - name: Test Deployment
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            DOMAIN="${{ env.DOMAIN }}"
+            
+            echo "🧪 Testing deployment..."
+            
+            # Test HTTP response
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$DOMAIN || echo "000")
+            
+            echo "HTTP Status Code: $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Site is responding correctly"
+              
+              # Check if it's serving the right content
+              CONTENT=$(curl -s http://$DOMAIN | head -20)
+              
+              if echo "$CONTENT" | grep -q "<!DOCTYPE html>"; then
+                echo "✅ HTML content detected"
+              else
+                echo "⚠️ Unexpected content"
+              fi
+            else
+              echo "⚠️ Site returned HTTP $HTTP_CODE"
+            fi
 
       # 🔥 LOG DEPLOYMENT
       - name: Log Deployment
