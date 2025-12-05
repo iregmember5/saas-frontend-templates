@@ -89,6 +89,28 @@ jobs:
               echo "ℹ️ No existing deployment to backup"
             fi
 
+      # 🔥 CLEANUP OLD CONFIGURATIONS
+      - name: Cleanup Old Apache Configs
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            USER_ID="${{ env.USER_ID }}"
+            
+            echo "🧹 Cleaning up old configurations..."
+            
+            # Disable and remove old config files
+            a2dissite ${USER_ID}.conf 2>/dev/null || true
+            a2dissite 001-${USER_ID}.conf 2>/dev/null || true
+            
+            rm -f /etc/apache2/sites-available/${USER_ID}.conf
+            rm -f /etc/apache2/sites-available/001-${USER_ID}.conf
+            
+            echo "✅ Old configs removed"
+
       # 🔥 CREATE DEPLOYMENT DIRECTORY
       - name: Prepare Deployment Directory
         if: success()
@@ -215,7 +237,7 @@ jobs:
             systemctl restart apache2
             echo "✅ Apache modules enabled"
 
-      # 🔥 CONFIGURE APACHE WITH PROPER PRIORITY
+      # 🔥 CONFIGURE APACHE WITH PROPER PRIORITY (WITHOUT WWW)
       - name: Configure Apache Virtual Host
         id: apache
         if: success()
@@ -231,10 +253,10 @@ jobs:
             echo "🌐 Configuring Apache for $DOMAIN..."
 
             # Create Apache configuration with higher priority (001- prefix)
+            # Note: Removed www subdomain from ServerAlias since DNS may not be configured for it
             cat > /etc/apache2/sites-available/001-${USER_ID}.conf << 'EOF'
             <VirtualHost *:80>
                 ServerName DOMAIN_PLACEHOLDER
-                ServerAlias www.DOMAIN_PLACEHOLDER
                 DocumentRoot /var/www/saas-deployments/USER_ID_PLACEHOLDER/dist
                 
                 <Directory /var/www/saas-deployments/USER_ID_PLACEHOLDER/dist>
@@ -284,11 +306,6 @@ jobs:
             sed -i "s|DOMAIN_PLACEHOLDER|$DOMAIN|g" /etc/apache2/sites-available/001-${USER_ID}.conf
             sed -i "s|USER_ID_PLACEHOLDER|$USER_ID|g" /etc/apache2/sites-available/001-${USER_ID}.conf
 
-            # Remove old config if exists
-            a2dissite ${USER_ID}.conf 2>/dev/null || true
-            a2dissite 001-${USER_ID}.conf 2>/dev/null || true
-            rm -f /etc/apache2/sites-available/${USER_ID}.conf
-
             # Enable new site
             a2ensite 001-${USER_ID}.conf
 
@@ -324,7 +341,6 @@ jobs:
 
             # Disable failed site
             a2dissite 001-${{ env.USER_ID }}.conf 2>/dev/null || true
-            a2dissite ${{ env.USER_ID }}.conf 2>/dev/null || true
 
             # Reload Apache
             systemctl reload apache2
@@ -335,7 +351,7 @@ jobs:
               -d '{"status": "failed", "stage": "apache", "user_id": "${{ env.USER_ID }}", "error": "Apache configuration failed"}'
             exit 1
 
-      # 🔥 IMPROVED SSL SETUP WITH IPv4/IPv6 HANDLING
+      # 🔥 IMPROVED SSL SETUP (ONLY FOR MAIN DOMAIN, NOT WWW)
       - name: Setup SSL Certificate
         if: success()
         uses: appleboy/ssh-action@v1.0.3
@@ -384,15 +400,13 @@ jobs:
             if [ $DNS_MATCH -eq 1 ]; then
               echo "✅ Domain points to this server. Installing SSL..."
               
-              # Get SSL certificate
+              # Get SSL certificate - ONLY for main domain, not www
               certbot --apache \
                 -d $DOMAIN \
-                -d www.$DOMAIN \
                 --non-interactive \
                 --agree-tos \
                 --email ${{ secrets.SSL_EMAIL }} \
                 --redirect \
-                --expand \
                 2>&1 | tee /tmp/certbot-output.log
               
               CERTBOT_EXIT=$?
@@ -411,7 +425,7 @@ jobs:
                 cat /tmp/certbot-output.log
                 echo ""
                 echo "📝 Manual SSL command:"
-                echo "certbot --apache -d $DOMAIN -d www.$DOMAIN --email ${{ secrets.SSL_EMAIL }}"
+                echo "certbot --apache -d $DOMAIN --email ${{ secrets.SSL_EMAIL }}"
               fi
             else
               echo "⚠️ Domain DNS does not point to this server yet."
@@ -428,7 +442,7 @@ jobs:
               
               echo ""
               echo "After updating DNS, wait 5-10 minutes then run:"
-              echo "certbot --apache -d $DOMAIN -d www.$DOMAIN --email ${{ secrets.SSL_EMAIL }}"
+              echo "certbot --apache -d $DOMAIN --email ${{ secrets.SSL_EMAIL }}"
               echo ""
               echo "Site is accessible via HTTP for now: http://$DOMAIN"
             fi
