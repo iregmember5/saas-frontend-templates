@@ -255,23 +255,19 @@ export interface ApiResponse {
   items: NotaryPageData[];
 }
 
-const isDevelopment = import.meta.env.DEV;
-const frontendUrl = isDevelopment
-  ? "http://localhost:3000"
-  : window.location.origin;
-
-const baseApiUrl = isDevelopment
-  ? "/api/v2"
-  : "https://esign-admin.signmary.com/api/v2";
+import { getApiConfig } from '../config/api';
 
 export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
   try {
-    const apiUrl = `${baseApiUrl}/notary-pages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/notary-pages/`;
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
