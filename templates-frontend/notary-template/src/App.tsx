@@ -103,7 +103,7 @@ function App() {
 
         <main className="pt-20">
           {pageData.blocks.map((block) => (
-            <BlockRenderer key={block.id} block={block} />
+            <BlockRenderer key={block.id} block={block} notaryPageId={pageData.id} />
           ))}
         </main>
 

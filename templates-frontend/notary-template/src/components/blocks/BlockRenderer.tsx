@@ -19,9 +19,10 @@ import {
 
 interface BlockRendererProps {
   block: NotaryBlock;
+  notaryPageId: number;
 }
 
-export const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
+export const BlockRenderer: React.FC<BlockRendererProps> = ({ block, notaryPageId }) => {
   switch (block.type) {
     case 'hero':
       return <HeroBlock block={block} />;
@@ -30,9 +31,9 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
     case 'services_list':
       return <ServicesListBlock block={block} />;
     case 'booking':
-      return <BookingBlock block={block} />;
+      return <BookingBlock block={block} notaryPageId={notaryPageId} />;
     case 'document_upload':
-      return <DocumentUploadBlock block={block} />;
+      return <DocumentUploadBlock block={block} notaryPageId={notaryPageId} />;
     case 'payment':
       return <PaymentBlock block={block} />;
     case 'faq':

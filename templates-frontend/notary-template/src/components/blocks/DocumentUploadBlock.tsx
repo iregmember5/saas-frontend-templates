@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import type { DocumentUploadBlock as DocumentUploadBlockType } from '../../types/wagtail';
 import { Upload, File, CheckCircle, AlertCircle, Shield, Lock } from 'lucide-react';
+import { uploadDocument } from '../../utils/api';
 
 interface DocumentUploadBlockProps {
   block: DocumentUploadBlockType;
+  notaryPageId: number;
 }
 
-export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block }) => {
+export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block, notaryPageId }) => {
   const { value } = block;
   const [files, setFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -34,6 +39,28 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block 
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       setFiles(Array.from(e.target.files));
+    }
+  };
+
+  const handleUpload = async () => {
+    if (files.length === 0) return;
+    
+    setUploading(true);
+    setError('');
+
+    try {
+      for (const file of files) {
+        await uploadDocument({
+          notary_page: notaryPageId,
+          document_file: file,
+          document_name: file.name,
+        });
+      }
+      setSuccess(true);
+    } catch (err) {
+      setError('Failed to upload documents. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -103,11 +130,19 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block 
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
-                <div className="p-3 bg-green-100 rounded-xl">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
+                {success && (
+                  <div className="p-3 bg-green-100 rounded-xl">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                )}
               </div>
             ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+            {error}
           </div>
         )}
 
@@ -130,8 +165,12 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block 
           </div>
         )}
 
-        <button className="w-full mt-8 px-10 py-6 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-2xl font-black text-xl hover:shadow-2xl transition-all hover:scale-105">
-          Upload Documents Securely
+        <button 
+          onClick={handleUpload}
+          disabled={uploading || files.length === 0 || success}
+          className="w-full mt-8 px-10 py-6 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-2xl font-black text-xl hover:shadow-2xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {uploading ? 'Uploading...' : success ? 'Documents Uploaded!' : 'Upload Documents Securely'}
         </button>
       </div>
     </section>
