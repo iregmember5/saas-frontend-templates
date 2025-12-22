@@ -1,0 +1,237 @@
+import type { NotaryPageData } from '../types/wagtail';
+
+export const mockNotaryData: NotaryPageData = {
+  id: 1,
+  title: 'Professional Notary Services',
+  meta: {
+    type: 'notary.NotaryPage',
+    slug: 'home',
+    seo_title: 'Professional Notary Services - Certified & Trusted',
+    search_description: 'Licensed notary public offering mobile, office, and remote online notarization services.',
+  },
+  color_theme: {
+    id: 1,
+    name: 'Professional Blue',
+    primary_color: '#2563eb',
+    secondary_color: '#1e40af',
+    accent_color: '#f59e0b',
+    neutral_color: '#6b7280',
+    background_color: '#ffffff',
+    text_color: '#1f2937',
+  },
+  blocks: [
+    {
+      type: 'hero',
+      value: {
+        headline: 'Trusted Notary Services at Your Convenience',
+        subheadline: 'Professional, certified notary public serving your community with mobile, office, and remote online notarization.',
+        primary_cta_label: 'Book Appointment',
+        primary_cta_action: 'book',
+        secondary_cta_label: 'Learn More',
+        secondary_cta_action: 'contact',
+        background_type: 'gradient',
+        show_location_badge: true,
+        location_text: '📍 Serving California',
+      },
+      id: 'hero-1',
+    },
+    {
+      type: 'verified_credentials',
+      value: {
+        notary_name: 'John Smith',
+        state_of_commission: 'California',
+        license_number: 'CA-123456789',
+        commission_expiry: '2026-12-31',
+        certifications: [
+          'NNA Certified',
+          'Background Screened',
+          'RON Authorized',
+          'E&O Insured',
+        ],
+        display_badge_icons: true,
+        disclaimer_text: 'Licensed and bonded notary public in the State of California. Commission number CA-123456789.',
+      },
+      id: 'credentials-1',
+    },
+    {
+      type: 'services_list',
+      value: {
+        services: [
+          {
+            service_name: 'General Notarization',
+            description: 'Notarize affidavits, powers of attorney, deeds, contracts, and other legal documents.',
+            starting_price: '$15',
+            duration: '15-30 minutes',
+            cta_label: 'Book Now',
+            cta_action: 'book',
+            is_popular: true,
+          },
+          {
+            service_name: 'Mobile Notary',
+            description: 'We come to your location - home, office, hospital, or anywhere you need us.',
+            starting_price: '$75',
+            duration: '30-60 minutes',
+            cta_label: 'Schedule Visit',
+            cta_action: 'book',
+            is_popular: false,
+          },
+          {
+            service_name: 'Remote Online Notarization (RON)',
+            description: 'Secure video-based notarization from anywhere. Available 24/7.',
+            starting_price: '$25',
+            duration: '20-40 minutes',
+            cta_label: 'Start RON Session',
+            cta_action: 'book',
+            is_popular: true,
+          },
+          {
+            service_name: 'Loan Signing',
+            description: 'Certified loan signing agent for mortgage closings and refinances.',
+            starting_price: '$125',
+            duration: '60-90 minutes',
+            cta_label: 'Request Quote',
+            cta_action: 'contact',
+            is_popular: false,
+          },
+          {
+            service_name: 'Apostille Services',
+            description: 'Document authentication for international use.',
+            starting_price: '$50',
+            duration: '3-5 business days',
+            cta_label: 'Learn More',
+            cta_action: 'contact',
+            is_popular: false,
+          },
+          {
+            service_name: 'I-9 Verification',
+            description: 'Employment eligibility verification services.',
+            starting_price: '$20',
+            duration: '15-20 minutes',
+            cta_label: 'Book Now',
+            cta_action: 'book',
+            is_popular: false,
+          },
+        ],
+      },
+      id: 'services-1',
+    },
+    {
+      type: 'service_area',
+      value: {
+        service_modes: ['office', 'mobile', 'remote'],
+        cities_served: [
+          'Los Angeles',
+          'San Diego',
+          'San Francisco',
+          'Sacramento',
+          'San Jose',
+          'Fresno',
+        ],
+        travel_radius: 50,
+        show_map: true,
+        map_type: 'google',
+        office_address: '123 Main Street, Los Angeles, CA 90001',
+      },
+      id: 'service-area-1',
+    },
+    {
+      type: 'booking',
+      value: {
+        booking_type: 'office',
+        calendar_source: 'internal',
+        duration_options: ['15 min', '30 min', '60 min'],
+        buffer_time: 15,
+        require_payment: false,
+        confirmation_message: 'You will receive a confirmation email shortly.',
+      },
+      id: 'booking-1',
+    },
+    {
+      type: 'document_upload',
+      value: {
+        allowed_file_types: ['.pdf', '.jpg', '.png', '.docx'],
+        max_file_size: 10,
+        require_before_booking: false,
+        instructions: 'Upload your documents securely. All files are encrypted and stored safely.',
+        privacy_notice: 'Your documents are encrypted using 256-bit SSL encryption and stored securely. We never share your information with third parties.',
+      },
+      id: 'upload-1',
+    },
+    {
+      type: 'testimonials',
+      value: {
+        display_type: 'manual',
+        testimonials: [
+          {
+            client_name: 'Sarah Johnson',
+            rating: 5,
+            testimonial_text: 'Excellent service! Very professional and made the process so easy. Highly recommend!',
+          },
+          {
+            client_name: 'Michael Chen',
+            rating: 5,
+            testimonial_text: 'Fast, reliable, and convenient. The mobile notary service saved me so much time.',
+          },
+          {
+            client_name: 'Emily Rodriguez',
+            rating: 5,
+            testimonial_text: 'Professional and knowledgeable. Made me feel confident throughout the entire process.',
+          },
+        ],
+        max_reviews: 6,
+      },
+      id: 'testimonials-1',
+    },
+    {
+      type: 'faq',
+      value: {
+        category: 'General',
+        faqs: [
+          {
+            question: 'What documents do I need to bring?',
+            answer: 'You need a valid government-issued photo ID (driver\'s license, passport, or state ID) and the documents to be notarized. The documents should be unsigned.',
+          },
+          {
+            question: 'How much does notarization cost?',
+            answer: 'California law sets the maximum fee at $15 per signature for most documents. Mobile notary services start at $75 which includes travel. RON services start at $25.',
+          },
+          {
+            question: 'Do you offer mobile notary services?',
+            answer: 'Yes! We come to your location anywhere within 50 miles. Perfect for home closings, hospital visits, or office signings.',
+          },
+          {
+            question: 'What is Remote Online Notarization (RON)?',
+            answer: 'RON allows you to get documents notarized via secure video call. It\'s legal in California and available 24/7 for your convenience.',
+          },
+          {
+            question: 'How long does the notarization process take?',
+            answer: 'Most notarizations take 15-30 minutes. Loan signings typically take 60-90 minutes. We always schedule enough time to answer your questions.',
+          },
+        ],
+        expand_first: true,
+      },
+      id: 'faq-1',
+    },
+    {
+      type: 'payment',
+      value: {
+        payment_type: 'full',
+        amount: '15.00',
+        description: 'Secure payment for notary services',
+        require_before_proceeding: false,
+        success_message: 'Payment successful! Your appointment is confirmed.',
+      },
+      id: 'payment-1',
+    },
+    {
+      type: 'contact_form',
+      value: {
+        form_fields: ['name', 'email', 'phone', 'message'],
+        enable_file_upload: true,
+        route_to: 'email',
+        success_message: 'Thank you for contacting us! We\'ll respond within 24 hours.',
+      },
+      id: 'contact-1',
+    },
+  ],
+};
