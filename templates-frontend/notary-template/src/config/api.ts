@@ -12,7 +12,7 @@ export const getApiConfig = (): ApiConfig => {
   
   if (isDevelopment) {
     return {
-      cmsUrl: import.meta.env.VITE_CMS_URL || 'https://esign-admin.signmary.com/api/v2',
+      cmsUrl: import.meta.env.VITE_CMS_URL || 'https://esign-admin.signmary.com/blogs/api/v2',
       subdomain: import.meta.env.VITE_SUBDOMAIN || 'demo',
       tenantId: import.meta.env.VITE_TENANT_ID || 'demo',
     };
@@ -25,7 +25,7 @@ export const getApiConfig = (): ApiConfig => {
   const subdomain = parts.length > 2 ? parts.slice(0, -2).join('.') : parts[0];
   
   return {
-    cmsUrl: `https://esign-admin.signmary.com/api/v2`,
+    cmsUrl: `https://esign-admin.signmary.com/blogs/api/v2`,
     subdomain: subdomain,
     tenantId: subdomain,
   };
