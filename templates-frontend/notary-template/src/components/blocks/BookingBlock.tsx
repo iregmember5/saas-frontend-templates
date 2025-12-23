@@ -145,21 +145,13 @@ export const BookingBlock: React.FC<BookingBlockProps> = ({ block, notaryPageId 
               <label className="block text-sm font-semibold text-theme-text mb-2">
                 Select Time *
               </label>
-              <select
+              <input
+                type="time"
                 value={selectedTime}
                 onChange={(e) => setSelectedTime(e.target.value)}
                 required
                 className="w-full px-4 py-3 border-2 border-theme-neutral/20 rounded-lg focus:border-theme-primary focus:outline-none"
-              >
-                <option value="">Choose a time slot</option>
-                <option value="09:00">9:00 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="13:00">1:00 PM</option>
-                <option value="14:00">2:00 PM</option>
-                <option value="15:00">3:00 PM</option>
-                <option value="16:00">4:00 PM</option>
-              </select>
+              />
             </div>
 
             <div>
