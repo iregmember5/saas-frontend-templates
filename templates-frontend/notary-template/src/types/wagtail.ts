@@ -288,7 +288,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
     
     // Merge API data with mock data - API overrides only what it provides
     const apiBlocks: NotaryBlock[] = [
-      page.hero && {
+      page.hero && page.hero.headline && {
         type: 'hero' as const,
         value: {
           headline: page.hero.headline || '',
@@ -306,7 +306,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'hero-1',
       },
-      page.credentials && {
+      page.credentials && page.credentials.notary_name && {
         type: 'verified_credentials' as const,
         value: {
           notary_name: page.credentials.notary_name || '',
@@ -319,7 +319,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'credentials-1',
       },
-      page.services && {
+      page.services && page.services.length > 0 && {
         type: 'services_list' as const,
         value: {
           services: (page.services || []).map((s: any) => ({
@@ -335,7 +335,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'services-1',
       },
-      page.service_area && {
+      page.service_area && page.service_area.cities && page.service_area.cities.length > 0 && {
         type: 'service_area' as const,
         value: {
           service_modes: Object.entries(page.service_area.modes || {})
@@ -349,7 +349,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'service-area-1',
       },
-      page.booking && {
+      page.booking && page.booking.duration_options && page.booking.duration_options.length > 0 && {
         type: 'booking' as const,
         value: {
           booking_type: page.booking.type || 'office',
@@ -361,7 +361,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'booking-1',
       },
-      page.upload && {
+      page.upload && page.upload.allowed_types && page.upload.allowed_types.length > 0 && {
         type: 'document_upload' as const,
         value: {
           allowed_file_types: page.upload.allowed_types || [],
@@ -372,7 +372,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'upload-1',
       },
-      page.testimonials && {
+      page.testimonials && page.testimonials.items && page.testimonials.items.length > 0 && {
         type: 'testimonials' as const,
         value: {
           display_type: page.testimonials.display_type || 'manual',
@@ -387,7 +387,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'testimonials-1',
       },
-      page.faq && {
+      page.faq && page.faq.items && page.faq.items.length > 0 && {
         type: 'faq' as const,
         value: {
           category: page.faq.category || '',
@@ -399,7 +399,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'faq-1',
       },
-      page.payment && {
+      page.payment && page.payment.amount && parseFloat(page.payment.amount) > 0 && {
         type: 'payment' as const,
         value: {
           payment_type: page.payment.type || 'full',
@@ -410,7 +410,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'payment-1',
       },
-      page.contact_form && {
+      page.contact_form && page.contact_form.fields && page.contact_form.fields.length > 0 && {
         type: 'contact_form' as const,
         value: {
           form_fields: page.contact_form.fields || [],
