@@ -85,20 +85,6 @@ function App() {
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-theme-background">
-        {/* Apply theme colors */}
-        {pageData.color_theme && (
-          <style>{`
-            :root {
-              --color-primary: ${pageData.color_theme.primary_color};
-              --color-secondary: ${pageData.color_theme.secondary_color};
-              --color-accent: ${pageData.color_theme.accent_color};
-              --color-neutral: ${pageData.color_theme.neutral_color};
-              --color-background: ${pageData.color_theme.background_color};
-              --color-text: ${pageData.color_theme.text_color};
-            }
-          `}</style>
-        )}
-
         <Navbar />
 
         <main className="pt-20">

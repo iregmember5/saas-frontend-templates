@@ -435,7 +435,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         seo_title: page.meta?.title || page.title,
         search_description: page.meta?.description || '',
       },
-      color_theme: mockNotaryData.color_theme, // Always use hardcoded colors
+      color_theme: undefined, // Never use dynamic colors
       blocks: [...apiBlocks, ...mockBlocksToKeep],
     };
   } catch (error) {
