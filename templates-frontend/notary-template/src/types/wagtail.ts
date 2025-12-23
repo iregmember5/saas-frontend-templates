@@ -258,6 +258,8 @@ export interface ApiResponse {
 import { getApiConfig } from '../config/api';
 
 export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
+  const { mockNotaryData } = await import('../utils/mockData');
+  
   try {
     const { cmsUrl, subdomain, tenantId } = getApiConfig();
     const apiUrl = `${cmsUrl}/notary-pages/`;
@@ -273,18 +275,156 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
 
     if (!response.ok) {
       console.warn('API not available, using mock data');
-      const { mockNotaryData } = await import('../utils/mockData');
       return mockNotaryData;
     }
 
     const data: any = await response.json();
     if (!data?.items?.length) {
       console.warn('No API data, using mock data');
-      const { mockNotaryData } = await import('../utils/mockData');
       return mockNotaryData;
     }
 
     const page: any = data.items[0];
+    
+    // Merge API data with mock data - API overrides only what it provides
+    const apiBlocks: NotaryBlock[] = [
+      page.hero && {
+        type: 'hero' as const,
+        value: {
+          headline: page.hero.headline || '',
+          subheadline: page.hero.subheadline,
+          primary_cta_label: page.hero.primary_cta?.label || '',
+          primary_cta_action: page.hero.primary_cta?.action || 'book',
+          primary_cta_target: page.hero.primary_cta?.target,
+          secondary_cta_label: page.hero.secondary_cta?.label,
+          secondary_cta_action: page.hero.secondary_cta?.action,
+          background_type: page.hero.background_type || 'solid',
+          background_image: page.hero.background_image,
+          overlay_color: page.hero.overlay_color,
+          show_location_badge: page.hero.show_location_badge || false,
+          location_text: page.hero.location_text,
+        },
+        id: 'hero-1',
+      },
+      page.credentials && {
+        type: 'verified_credentials' as const,
+        value: {
+          notary_name: page.credentials.notary_name || '',
+          state_of_commission: page.credentials.state || '',
+          license_number: page.credentials.license_number || '',
+          commission_expiry: page.credentials.expiry_date || '',
+          certifications: page.credentials.certifications || [],
+          display_badge_icons: page.credentials.display_badges || false,
+          disclaimer_text: page.credentials.disclaimer,
+        },
+        id: 'credentials-1',
+      },
+      page.services && {
+        type: 'services_list' as const,
+        value: {
+          services: (page.services || []).map((s: any) => ({
+            service_name: s.service_name || '',
+            description: s.short_description || '',
+            starting_price: s.starting_price,
+            duration: s.duration,
+            cta_label: s.cta_label || '',
+            cta_action: s.cta_action || '',
+            cta_target: s.cta_target,
+            is_popular: s.highlight_as_popular || false,
+          })),
+        },
+        id: 'services-1',
+      },
+      page.service_area && {
+        type: 'service_area' as const,
+        value: {
+          service_modes: Object.entries(page.service_area.modes || {})
+            .filter(([_, v]) => v)
+            .map(([k]) => k),
+          cities_served: page.service_area.cities || [],
+          travel_radius: page.service_area.travel_radius,
+          show_map: page.service_area.show_map || false,
+          map_type: page.service_area.map_type,
+          office_address: page.service_area.office_address,
+        },
+        id: 'service-area-1',
+      },
+      page.booking && {
+        type: 'booking' as const,
+        value: {
+          booking_type: page.booking.type || 'office',
+          calendar_source: page.booking.calendar_source || 'internal',
+          duration_options: page.booking.duration_options || [],
+          buffer_time: page.booking.buffer_time || 0,
+          require_payment: page.booking.require_payment || false,
+          confirmation_message: page.booking.confirmation_message || '',
+        },
+        id: 'booking-1',
+      },
+      page.upload && {
+        type: 'document_upload' as const,
+        value: {
+          allowed_file_types: page.upload.allowed_types || [],
+          max_file_size: page.upload.max_size || 10,
+          require_before_booking: page.upload.require_before_booking || false,
+          instructions: page.upload.instructions || '',
+          privacy_notice: page.upload.privacy_notice || '',
+        },
+        id: 'upload-1',
+      },
+      page.testimonials && {
+        type: 'testimonials' as const,
+        value: {
+          display_type: page.testimonials.display_type || 'manual',
+          testimonials: (page.testimonials.items || []).map((t: any) => ({
+            client_name: t.name || '',
+            rating: 5,
+            testimonial_text: t.quote || '',
+            client_photo: t.photo,
+          })),
+          google_place_id: page.testimonials.google_place_id,
+          max_reviews: page.testimonials.max_reviews || 5,
+        },
+        id: 'testimonials-1',
+      },
+      page.faq && {
+        type: 'faq' as const,
+        value: {
+          category: page.faq.category || '',
+          faqs: (page.faq.items || []).map((f: any) => ({
+            question: f.question || '',
+            answer: f.answer || '',
+          })),
+          expand_first: page.faq.expand_first || false,
+        },
+        id: 'faq-1',
+      },
+      page.payment && {
+        type: 'payment' as const,
+        value: {
+          payment_type: page.payment.type || 'full',
+          amount: page.payment.amount || '0',
+          description: page.payment.description || '',
+          require_before_proceeding: page.payment.require_before_proceeding || false,
+          success_message: page.payment.success_message || '',
+        },
+        id: 'payment-1',
+      },
+      page.contact_form && {
+        type: 'contact_form' as const,
+        value: {
+          form_fields: page.contact_form.fields || [],
+          enable_file_upload: page.contact_form.enable_file_upload || false,
+          route_to: page.contact_form.route_leads_to || 'email',
+          success_message: page.contact_form.success_message || '',
+        },
+        id: 'contact-1',
+      },
+    ].filter((block): block is NotaryBlock => !!block);
+
+    // Merge: Keep mock blocks that aren't in API response
+    const apiBlockIds = new Set(apiBlocks.map(b => b.id));
+    const mockBlocksToKeep = mockNotaryData.blocks.filter(b => !apiBlockIds.has(b.id));
     
     return {
       id: page.id,
@@ -295,145 +435,11 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         seo_title: page.meta?.title || page.title,
         search_description: page.meta?.description || '',
       },
-      color_theme: page.color_theme,
-      blocks: [
-        page.hero && {
-          type: 'hero' as const,
-          value: {
-            headline: page.hero.headline || '',
-            subheadline: page.hero.subheadline,
-            primary_cta_label: page.hero.primary_cta?.label || '',
-            primary_cta_action: page.hero.primary_cta?.action || 'book',
-            primary_cta_target: page.hero.primary_cta?.target,
-            secondary_cta_label: page.hero.secondary_cta?.label,
-            secondary_cta_action: page.hero.secondary_cta?.action,
-            background_type: page.hero.background_type || 'solid',
-            background_image: page.hero.background_image,
-            overlay_color: page.hero.overlay_color,
-            show_location_badge: page.hero.show_location_badge || false,
-            location_text: page.hero.location_text,
-          },
-          id: 'hero-1',
-        },
-        page.credentials && {
-          type: 'verified_credentials' as const,
-          value: {
-            notary_name: page.credentials.notary_name || '',
-            state_of_commission: page.credentials.state || '',
-            license_number: page.credentials.license_number || '',
-            commission_expiry: page.credentials.expiry_date || '',
-            certifications: page.credentials.certifications || [],
-            display_badge_icons: page.credentials.display_badges || false,
-            disclaimer_text: page.credentials.disclaimer,
-          },
-          id: 'credentials-1',
-        },
-        page.services && {
-          type: 'services_list' as const,
-          value: {
-            services: (page.services || []).map((s: any) => ({
-              service_name: s.service_name || '',
-              description: s.short_description || '',
-              starting_price: s.starting_price,
-              duration: s.duration,
-              cta_label: s.cta_label || '',
-              cta_action: s.cta_action || '',
-              cta_target: s.cta_target,
-              is_popular: s.highlight_as_popular || false,
-            })),
-          },
-          id: 'services-1',
-        },
-        page.service_area && {
-          type: 'service_area' as const,
-          value: {
-            service_modes: Object.entries(page.service_area.modes || {})
-              .filter(([_, v]) => v)
-              .map(([k]) => k),
-            cities_served: page.service_area.cities || [],
-            travel_radius: page.service_area.travel_radius,
-            show_map: page.service_area.show_map || false,
-            map_type: page.service_area.map_type,
-            office_address: page.service_area.office_address,
-          },
-          id: 'service-area-1',
-        },
-        page.booking && {
-          type: 'booking' as const,
-          value: {
-            booking_type: page.booking.type || 'office',
-            calendar_source: page.booking.calendar_source || 'internal',
-            duration_options: page.booking.duration_options || [],
-            buffer_time: page.booking.buffer_time || 0,
-            require_payment: page.booking.require_payment || false,
-            confirmation_message: page.booking.confirmation_message || '',
-          },
-          id: 'booking-1',
-        },
-        page.upload && {
-          type: 'document_upload' as const,
-          value: {
-            allowed_file_types: page.upload.allowed_types || [],
-            max_file_size: page.upload.max_size || 10,
-            require_before_booking: page.upload.require_before_booking || false,
-            instructions: page.upload.instructions || '',
-            privacy_notice: page.upload.privacy_notice || '',
-          },
-          id: 'upload-1',
-        },
-        page.testimonials && {
-          type: 'testimonials' as const,
-          value: {
-            display_type: page.testimonials.display_type || 'manual',
-            testimonials: (page.testimonials.items || []).map((t: any) => ({
-              client_name: t.name || '',
-              rating: 5,
-              testimonial_text: t.quote || '',
-              client_photo: t.photo,
-            })),
-            google_place_id: page.testimonials.google_place_id,
-            max_reviews: page.testimonials.max_reviews || 5,
-          },
-          id: 'testimonials-1',
-        },
-        page.faq && {
-          type: 'faq' as const,
-          value: {
-            category: page.faq.category || '',
-            faqs: (page.faq.items || []).map((f: any) => ({
-              question: f.question || '',
-              answer: f.answer || '',
-            })),
-            expand_first: page.faq.expand_first || false,
-          },
-          id: 'faq-1',
-        },
-        page.payment && {
-          type: 'payment' as const,
-          value: {
-            payment_type: page.payment.type || 'full',
-            amount: page.payment.amount || '0',
-            description: page.payment.description || '',
-            require_before_proceeding: page.payment.require_before_proceeding || false,
-            success_message: page.payment.success_message || '',
-          },
-          id: 'payment-1',
-        },
-        page.contact_form && {
-          type: 'contact_form' as const,
-          value: {
-            form_fields: page.contact_form.fields || [],
-            enable_file_upload: page.contact_form.enable_file_upload || false,
-            route_to: page.contact_form.route_leads_to || 'email',
-            success_message: page.contact_form.success_message || '',
-          },
-          id: 'contact-1',
-        },
-      ].filter((block): block is NotaryBlock => !!block),
+      color_theme: mockNotaryData.color_theme, // Always use hardcoded colors
+      blocks: [...apiBlocks, ...mockBlocksToKeep],
     };
   } catch (error) {
     console.error("API error, using mock data:", error);
-    const { mockNotaryData } = await import('../utils/mockData');
     return mockNotaryData;
   }
 };
