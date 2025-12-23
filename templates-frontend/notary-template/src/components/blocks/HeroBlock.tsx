@@ -20,24 +20,8 @@ export const HeroBlock: React.FC<HeroBlockProps> = ({ block }) => {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {value.background_type === 'image' && value.background_image && (
-        <div className="absolute inset-0">
-          <img
-            src={value.background_image.url}
-            alt={value.background_image.title}
-            className="w-full h-full object-cover"
-          />
-          {value.overlay_color && (
-            <div className="absolute inset-0" style={{ backgroundColor: value.overlay_color, opacity: 0.7 }} />
-          )}
-        </div>
-      )}
-      {value.background_type === 'gradient' && (
-        <div className="absolute inset-0 bg-gradient-to-br from-theme-primary via-theme-secondary to-theme-accent" />
-      )}
-      {value.background_type === 'solid' && (
-        <div className="absolute inset-0 bg-theme-background" />
-      )}
+      {/* Always use gradient background - ignore API background settings */}
+      <div className="absolute inset-0 bg-gradient-to-br from-theme-primary via-theme-secondary to-theme-accent" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         {value.show_location_badge && value.location_text && (
