@@ -20,7 +20,6 @@ function App() {
         const data = await fetchNotaryPageData();
         setPageData(data);
 
-        // Set meta tags
         if (data.meta.seo_title) {
           document.title = data.meta.seo_title;
         }
@@ -89,7 +88,11 @@ function App() {
 
         <main className="pt-20">
           {pageData.blocks.map((block) => (
-            <BlockRenderer key={block.id} block={block} notaryPageId={pageData.id} />
+            <BlockRenderer
+              key={block.id}
+              block={block}
+              notaryPageId={pageData.id}
+            />
           ))}
         </main>
 
