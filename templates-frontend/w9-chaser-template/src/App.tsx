@@ -1,4 +1,3 @@
-// App.tsx
 import { useState, useEffect } from "react";
 import LandingPage from "./pages/LandingPage";
 import { FeaturesPage } from "./components/features/features-page/FeaturesPage";

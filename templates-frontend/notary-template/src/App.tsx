@@ -66,7 +66,7 @@ function App() {
             onClick={() => window.location.reload()}
             className="px-8 py-3 bg-theme-primary text-white rounded-lg font-semibold hover:bg-theme-secondary transition-all"
           >
-            Try Again and again
+            Try Again
           </button>
         </div>
       </div>

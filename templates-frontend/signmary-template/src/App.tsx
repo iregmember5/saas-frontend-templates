@@ -10,7 +10,7 @@ import { fetchLandingPageData } from "./API/Service/LandingPage";
 import Navbar from "./component/Navbar";
 import Testimonials from "./component/Testimonials";
 import type { PageData } from "./component/types";
-// app.tsx
+
 function App() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
