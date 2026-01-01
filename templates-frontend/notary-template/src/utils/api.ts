@@ -86,13 +86,15 @@ export const cancelAppointment = async (id: number) => {
 };
 
 // Documents API
-export const uploadDocument = async (data: { notary_page: number; appointment?: number; document_file: File; document_name: string }) => {
+export const uploadDocument = async (data: { notary_page: number; appointment?: number; document_file: File; document_name: string; client_name: string; client_email: string }) => {
   const { cmsUrl } = getApiConfig();
   const formData = new FormData();
   formData.append('notary_page', data.notary_page.toString());
   if (data.appointment) formData.append('appointment', data.appointment.toString());
   formData.append('document_file', data.document_file);
   formData.append('document_name', data.document_name);
+  formData.append('client_name', data.client_name);
+  formData.append('client_email', data.client_email);
   
   const response = await fetch(`${cmsUrl}/notary-documents/`, {
     method: 'POST',

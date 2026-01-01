@@ -15,6 +15,8 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block,
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -43,7 +45,7 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block,
   };
 
   const handleUpload = async () => {
-    if (files.length === 0) return;
+    if (files.length === 0 || !clientName || !clientEmail) return;
     
     setUploading(true);
     setError('');
@@ -54,6 +56,8 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block,
           notary_page: notaryPageId,
           document_file: file,
           document_name: file.name,
+          client_name: clientName,
+          client_email: clientEmail,
         });
       }
       setSuccess(true);
@@ -77,6 +81,31 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block,
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             {value.instructions}
           </p>
+        </div>
+
+        <div className="mb-8 space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-gray-900 mb-2">Client Name *</label>
+            <input
+              type="text"
+              value={clientName}
+              onChange={(e) => setClientName(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-theme-primary focus:outline-none"
+              placeholder="Enter your full name"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-900 mb-2">Client Email *</label>
+            <input
+              type="email"
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-theme-primary focus:outline-none"
+              placeholder="Enter your email address"
+              required
+            />
+          </div>
         </div>
 
         <div
@@ -167,7 +196,7 @@ export const DocumentUploadBlock: React.FC<DocumentUploadBlockProps> = ({ block,
 
         <button 
           onClick={handleUpload}
-          disabled={uploading || files.length === 0 || success}
+          disabled={uploading || files.length === 0 || !clientName || !clientEmail || success}
           className="w-full mt-8 px-10 py-6 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-2xl font-black text-xl hover:shadow-2xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {uploading ? 'Uploading...' : success ? 'Documents Uploaded!' : 'Upload Documents Securely'}
