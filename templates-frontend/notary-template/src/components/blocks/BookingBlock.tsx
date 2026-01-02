@@ -13,6 +13,8 @@ export const BookingBlock: React.FC<BookingBlockProps> = ({ block, notaryPageId 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDuration, setSelectedDuration] = useState('');
+  const [appointmentType, setAppointmentType] = useState('office');
+  const [customAppointmentType, setCustomAppointmentType] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -41,7 +43,7 @@ export const BookingBlock: React.FC<BookingBlockProps> = ({ block, notaryPageId 
         client_name: clientName,
         client_email: clientEmail,
         client_phone: clientPhone,
-        appointment_type: value.booking_type,
+        appointment_type: appointmentType === 'other' ? customAppointmentType : appointmentType,
         appointment_date: selectedDate,
         appointment_time: selectedTime,
         notes: notes,
@@ -127,6 +129,39 @@ export const BookingBlock: React.FC<BookingBlockProps> = ({ block, notaryPageId 
                 className="w-full px-4 py-3 border-2 border-theme-neutral/20 rounded-lg focus:border-theme-primary focus:outline-none"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-theme-text mb-2">
+                Appointment Type *
+              </label>
+              <select
+                value={appointmentType}
+                onChange={(e) => setAppointmentType(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-theme-neutral/20 rounded-lg focus:border-theme-primary focus:outline-none"
+              >
+                <option value="office">Office</option>
+                <option value="mobile">Mobile</option>
+                <option value="remote">Remote</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {appointmentType === 'other' && (
+              <div>
+                <label className="block text-sm font-semibold text-theme-text mb-2">
+                  Specify Appointment Type *
+                </label>
+                <input
+                  type="text"
+                  value={customAppointmentType}
+                  onChange={(e) => setCustomAppointmentType(e.target.value)}
+                  required
+                  placeholder="Enter appointment type"
+                  className="w-full px-4 py-3 border-2 border-theme-neutral/20 rounded-lg focus:border-theme-primary focus:outline-none"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-theme-text mb-2">
