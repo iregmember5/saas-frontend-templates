@@ -49,18 +49,10 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ config }) => {
   if (!config) return null;
 
-  const visibleSections = [
-    config.sections.quick_links.show && config.sections.quick_links,
-    config.sections.services.show && config.sections.services,
-    config.sections.resources.show && config.sections.resources,
-  ].filter(Boolean);
-
-  const gridCols = config.sections.contact.show ? visibleSections.length + 2 : visibleSections.length + 1;
-
   return (
     <footer className="bg-theme-text text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className={`grid md:grid-cols-${Math.min(gridCols, 4)} gap-8`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <h3 className="text-2xl font-bold mb-4">{config.name}</h3>
             <p className="text-white/80 mb-4">{config.company_info.description}</p>
@@ -80,21 +72,6 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
               <h4 className="text-lg font-semibold mb-4">{config.sections.quick_links.heading}</h4>
               <ul className="space-y-2">
                 {config.sections.quick_links.links.sort((a, b) => a.order - b.order).map((link, idx) => (
-                  <li key={idx}>
-                    <a href={link.url || '#'} className="text-white/80 hover:text-white transition-colors">
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {config.sections.services.show && config.sections.services.links.length > 0 && (
-            <div>
-              <h4 className="text-lg font-semibold mb-4">{config.sections.services.heading}</h4>
-              <ul className="space-y-2">
-                {config.sections.services.links.sort((a, b) => a.order - b.order).map((link, idx) => (
                   <li key={idx}>
                     <a href={link.url || '#'} className="text-white/80 hover:text-white transition-colors">
                       {link.name}
