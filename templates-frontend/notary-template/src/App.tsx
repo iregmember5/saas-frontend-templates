@@ -96,7 +96,7 @@ function App() {
           ))}
         </main>
 
-        <Footer />
+        <Footer config={pageData.footer_config} />
       </div>
     </ThemeProvider>
   );

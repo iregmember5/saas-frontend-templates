@@ -246,6 +246,46 @@ export interface NotaryPageData {
   };
   color_theme?: ColorTheme;
   blocks: NotaryBlock[];
+  footer_config?: {
+    name: string;
+    company_info: {
+      description: string;
+      logo: string | null;
+    };
+    contact_info: {
+      address: string;
+      phone: string;
+      email: string;
+    };
+    social_links: Array<{
+      platform: string;
+      url: string;
+      icon_class: string;
+    }>;
+    sections: {
+      quick_links: {
+        show: boolean;
+        heading: string;
+        links: Array<{ name: string; url: string; order: number }>;
+      };
+      services: {
+        show: boolean;
+        heading: string;
+        links: Array<{ name: string; url: string; order: number }>;
+      };
+      resources: {
+        show: boolean;
+        heading: string;
+        links: Array<{ name: string; url: string; order: number }>;
+      };
+      contact: {
+        show: boolean;
+        heading: string;
+      };
+    };
+    copyright_text: string;
+    additional_footer_text: string;
+  };
 }
 
 export interface ApiResponse {
@@ -437,6 +477,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
       },
       color_theme: undefined, // Never use dynamic colors
       blocks: [...apiBlocks, ...mockBlocksToKeep],
+      footer_config: page.footer_config,
     };
   } catch (error) {
     console.error("API error, using mock data:", error);

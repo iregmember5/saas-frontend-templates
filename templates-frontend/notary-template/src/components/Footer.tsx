@@ -43,10 +43,12 @@ interface FooterConfig {
 }
 
 interface FooterProps {
-  config: FooterConfig;
+  config?: FooterConfig;
 }
 
 export const Footer: React.FC<FooterProps> = ({ config }) => {
+  if (!config) return null;
+
   const visibleSections = [
     config.sections.quick_links.show && config.sections.quick_links,
     config.sections.services.show && config.sections.services,
