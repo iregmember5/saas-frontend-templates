@@ -480,6 +480,11 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'contact-1',
       },
+      ...(page.dynamic_content || []).map((block: any) => ({
+        type: block.type,
+        value: block.value,
+        id: block.id,
+      })),
     ].filter((block): block is NotaryBlock => !!block);
 
     // Merge: Keep mock blocks that aren't in API response
