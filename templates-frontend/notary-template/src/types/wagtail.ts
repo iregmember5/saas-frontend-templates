@@ -494,6 +494,11 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
     const apiBlockIds = new Set(apiBlocks.map(b => b.id));
     const mockBlocksToKeep = mockNotaryData.blocks.filter(b => !apiBlockIds.has(b.id));
     
+    // If no API blocks except dynamic content, use all mock blocks + dynamic blocks
+    const finalBlocks = apiBlocks.length === dynamicBlocks.length 
+      ? [...mockNotaryData.blocks.slice(0, 4), ...dynamicBlocks, ...mockNotaryData.blocks.slice(4)]
+      : [...apiBlocks, ...mockBlocksToKeep];
+    
     return {
       id: page.id,
       title: page.title,
@@ -504,7 +509,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         search_description: page.meta?.description || '',
       },
       color_theme: undefined, // Never use dynamic colors
-      blocks: [...apiBlocks, ...mockBlocksToKeep],
+      blocks: finalBlocks,
       footer_config: page.footer_config,
     };
   } catch (error) {
