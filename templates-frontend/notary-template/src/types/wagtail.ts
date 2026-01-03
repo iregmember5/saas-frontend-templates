@@ -219,6 +219,25 @@ export interface ContentBlock {
   id: string;
 }
 
+// Card Grid Block
+export interface CardGridBlock {
+  type: 'card_grid';
+  value: {
+    heading: string;
+    subheading: string;
+    columns: string;
+    cards: Array<{
+      custom_title: string;
+      custom_description: string;
+      card_content: string | null;
+      card_icon: string;
+      card_image: string | null;
+      card_background: string | null;
+    }>;
+  };
+  id: string;
+}
+
 export type NotaryBlock =
   | HeroBlock
   | VerifiedCredentialsBlock
@@ -233,7 +252,8 @@ export type NotaryBlock =
   | IdentityVerificationBlock
   | ConsentBlock
   | ContactFormBlock
-  | ContentBlock;
+  | ContentBlock
+  | CardGridBlock;
 
 export interface NotaryPageData {
   id: number;

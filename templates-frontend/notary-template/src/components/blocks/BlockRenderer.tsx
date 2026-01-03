@@ -16,6 +16,7 @@ import {
   ContactFormBlock,
   ContentBlock,
 } from './AdditionalBlocks';
+import { CardGridBlock } from './CardGridBlock';
 
 interface BlockRendererProps {
   block: NotaryBlock;
@@ -52,6 +53,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ block, notaryPageI
       return <ContactFormBlock block={block} />;
     case 'content':
       return <ContentBlock block={block} />;
+    case 'card_grid':
+      return <CardGridBlock block={block} />;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;
