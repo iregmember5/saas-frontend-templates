@@ -346,6 +346,13 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
 
     const page: any = data.items[0];
     
+    // Process dynamic_content blocks
+    const dynamicBlocks: NotaryBlock[] = (page.dynamic_content || []).map((block: any) => ({
+      type: block.type,
+      value: block.value,
+      id: block.id,
+    }));
+    
     // Merge API data with mock data - API overrides only what it provides
     const apiBlocks: NotaryBlock[] = [
       page.hero && page.hero.headline && {
@@ -409,6 +416,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'service-area-1',
       },
+      ...dynamicBlocks,
       page.booking && page.booking.duration_options && page.booking.duration_options.length > 0 && {
         type: 'booking' as const,
         value: {
@@ -480,11 +488,6 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'contact-1',
       },
-      ...(page.dynamic_content || []).map((block: any) => ({
-        type: block.type,
-        value: block.value,
-        id: block.id,
-      })),
     ].filter((block): block is NotaryBlock => !!block);
 
     // Merge: Keep mock blocks that aren't in API response
