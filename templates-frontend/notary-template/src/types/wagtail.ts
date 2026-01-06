@@ -28,6 +28,7 @@ export interface HeroBlock {
     primary_cta_target?: string;
     secondary_cta_label?: string;
     secondary_cta_action?: 'book' | 'contact' | 'upload' | 'url';
+    secondary_cta_target?: string;
     background_type: 'solid' | 'image' | 'gradient';
     background_image?: ImageData;
     overlay_color?: string;
@@ -365,6 +366,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
           primary_cta_target: page.hero.primary_cta?.target,
           secondary_cta_label: page.hero.secondary_cta?.label,
           secondary_cta_action: page.hero.secondary_cta?.action,
+          secondary_cta_target: page.hero.secondary_cta?.target,
           background_type: page.hero.background_type || 'solid',
           background_image: page.hero.background_image,
           overlay_color: page.hero.overlay_color,

@@ -84,7 +84,7 @@ function App() {
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-theme-background">
-        <Navbar />
+        <Navbar headerConfig={pageData.header_config} />
 
         <main className="pt-20">
           {pageData.blocks.map((block) => (

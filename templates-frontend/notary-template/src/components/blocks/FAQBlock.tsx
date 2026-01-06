@@ -56,9 +56,10 @@ export const FAQBlock: React.FC<FAQBlockProps> = ({ block }) => {
               {openIndex === index && (
                 <div className="px-8 pb-6">
                   <div className="pt-4 border-t-2 border-gray-100">
-                    <p className="text-gray-700 leading-relaxed text-lg">
-                      {faq.answer}
-                    </p>
+                    <div 
+                      className="text-gray-700 leading-relaxed text-lg"
+                      dangerouslySetInnerHTML={{ __html: faq.answer }}
+                    />
                   </div>
                 </div>
               )}

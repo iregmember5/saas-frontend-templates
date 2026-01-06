@@ -3,9 +3,13 @@ import { Menu, X, Calendar, ChevronDown } from "lucide-react";
 
 interface NavbarProps {
   onServiceClick?: (serviceName: string) => void;
+  headerConfig?: {
+    logo?: { url: string; title: string } | null;
+    site_name?: string;
+  };
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onServiceClick }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -83,11 +87,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-theme-primary to-theme-secondary rounded-xl">
-              <Calendar className="w-6 h-6 text-white" />
-            </div>
+            {headerConfig?.logo ? (
+              <img src={headerConfig.logo.url} alt={headerConfig.logo.title} className="h-10 w-auto" />
+            ) : (
+              <div className="p-2 bg-gradient-to-br from-theme-primary to-theme-secondary rounded-xl">
+                <Calendar className="w-6 h-6 text-white" />
+              </div>
+            )}
             <h1 className="text-2xl font-black bg-gradient-to-r from-theme-primary to-theme-secondary bg-clip-text text-transparent">
-              Notary Services
+              {headerConfig?.site_name || 'Notary Services'}
             </h1>
           </div>
 

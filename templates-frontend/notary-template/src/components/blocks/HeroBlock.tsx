@@ -18,6 +18,18 @@ export const HeroBlock: React.FC<HeroBlockProps> = ({ block }) => {
     }
   };
 
+  const handleCTAClick = (action: string, target?: string) => {
+    if (action === 'url' && target) {
+      window.open(target, '_blank');
+    } else if (action === 'book') {
+      document.getElementById('booking-1')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (action === 'upload') {
+      document.getElementById('upload-1')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (action === 'contact') {
+      document.getElementById('contact-1')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Always use gradient background - ignore API background settings */}
@@ -41,14 +53,20 @@ export const HeroBlock: React.FC<HeroBlockProps> = ({ block }) => {
         )}
 
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <button className="group inline-flex items-center gap-3 px-10 py-5 bg-theme-accent text-white rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-2xl hover:shadow-theme-accent/50">
+          <button
+            onClick={() => handleCTAClick(value.primary_cta_action, value.primary_cta_target)}
+            className="group inline-flex items-center gap-3 px-10 py-5 bg-theme-accent text-white rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-2xl hover:shadow-theme-accent/50"
+          >
             {getActionIcon(value.primary_cta_action)}
             {value.primary_cta_label}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
 
           {value.secondary_cta_label && (
-            <button className="group inline-flex items-center gap-3 px-10 py-5 bg-white/95 backdrop-blur-md text-theme-primary rounded-xl font-bold text-lg hover:bg-white transition-all shadow-2xl border-2 border-white/30">
+            <button
+              onClick={() => handleCTAClick(value.secondary_cta_action || 'book', value.secondary_cta_target)}
+              className="group inline-flex items-center gap-3 px-10 py-5 bg-white/95 backdrop-blur-md text-theme-primary rounded-xl font-bold text-lg hover:bg-white transition-all shadow-2xl border-2 border-white/30"
+            >
               {value.secondary_cta_action && getActionIcon(value.secondary_cta_action)}
               {value.secondary_cta_label}
             </button>
