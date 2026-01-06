@@ -26,14 +26,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick }) => {
     setTimeout(() => {
       const cards = document.querySelectorAll('[data-service-name]');
       cards.forEach(card => {
-        if (card.getAttribute('data-service-name') === serviceName) {
-          card.classList.add('ring-4', 'ring-theme-accent', 'scale-105');
+        const cardName = card.getAttribute('data-service-name');
+        if (cardName === serviceName) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('ring-4', 'ring-orange-500', 'scale-105');
           setTimeout(() => {
-            card.classList.remove('ring-4', 'ring-theme-accent', 'scale-105');
+            card.classList.remove('ring-4', 'ring-orange-500', 'scale-105');
           }, 2000);
         }
       });
-    }, 500);
+    }, 800);
     setIsServicesOpen(false);
     setIsMobileMenuOpen(false);
   };
