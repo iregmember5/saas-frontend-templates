@@ -1,3 +1,5 @@
+import { getApiConfig } from '../config/api';
+
 // ===== EXISTING INTERFACES (keeping all your current ones) =====
 export interface ImageData {
   id: number;
@@ -365,24 +367,18 @@ export interface FeaturesPageApiResponse {
 }
 
 // ===== API Service Functions =====
-const isDevelopment = import.meta.env.DEV;
-const frontendUrl = isDevelopment
-  ? "http://localhost:5173"
-  : "https://mypowerly.vercel.app";
-
-const baseApiUrl = isDevelopment
-  ? "/blogs/api/v2"
-  : "https://esign-admin.signmary.com/blogs/api/v2";
-
 export const fetchLandingPageData = async (): Promise<LandingPageData> => {
   try {
-    const apiUrl = `${baseApiUrl}/mypages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/mypages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -408,13 +404,16 @@ export const fetchLandingPageData = async (): Promise<LandingPageData> => {
 // ===== NEW: Fetch all FeaturesPages =====
 export const fetchAllFeaturesPages = async (): Promise<FeaturesPageData[]> => {
   try {
-    const apiUrl = `${baseApiUrl}/features-pages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/features-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -442,13 +441,16 @@ export const fetchFeaturesPageById = async (
   id: number
 ): Promise<FeaturesPageData> => {
   try {
-    const apiUrl = `${baseApiUrl}/features-pages/${id}/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/features-pages/${id}/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
