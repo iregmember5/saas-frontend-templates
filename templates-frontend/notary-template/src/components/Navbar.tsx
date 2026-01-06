@@ -6,6 +6,14 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -66,10 +74,10 @@ export const Navbar: React.FC = () => {
               {isServicesOpen && (
                 <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border-2 border-gray-100 py-4">
                   {services.map((service, index) => (
-                    <a
+                    <button
                       key={index}
-                      href="#services"
-                      className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 transition-colors group"
+                      onClick={() => scrollToSection('services')}
+                      className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 transition-colors group w-full text-left"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{service.icon}</span>
@@ -85,33 +93,36 @@ export const Navbar: React.FC = () => {
                       <span className="text-theme-primary font-bold">
                         {service.price}
                       </span>
-                    </a>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
 
-            <a
-              href="#about"
+            <button
+              onClick={() => scrollToSection('about')}
               className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
             >
               About
-            </a>
-            <a
-              href="#faq"
+            </button>
+            <button
+              onClick={() => scrollToSection('faq')}
               className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
             >
               FAQ
-            </a>
-            <a
-              href="#contact"
+            </button>
+            <button
+              onClick={() => scrollToSection('contact')}
               className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
             >
               Contact
-            </a>
+            </button>
           </div>
 
-          <button className="hidden md:flex px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all items-center gap-2">
+          <button
+            onClick={() => scrollToSection('booking')}
+            className="hidden md:flex px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all items-center gap-2"
+          >
             <Calendar className="w-4 h-4" />
             Book Now
           </button>
@@ -148,10 +159,10 @@ export const Navbar: React.FC = () => {
                 {isServicesOpen && (
                   <div className="mt-2 ml-4 space-y-2">
                     {services.map((service, index) => (
-                      <a
+                      <button
                         key={index}
-                        href="#services"
-                        className="flex items-center justify-between py-2 text-sm"
+                        onClick={() => scrollToSection('services')}
+                        className="flex items-center justify-between py-2 text-sm w-full text-left"
                       >
                         <span className="text-gray-600 flex items-center gap-2">
                           <span>{service.icon}</span>
@@ -160,30 +171,33 @@ export const Navbar: React.FC = () => {
                         <span className="text-theme-primary font-bold">
                           {service.price}
                         </span>
-                      </a>
+                      </button>
                     ))}
                   </div>
                 )}
               </div>
-              <a
-                href="#about"
-                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2"
+              <button
+                onClick={() => scrollToSection('about')}
+                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
                 About
-              </a>
-              <a
-                href="#faq"
-                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2"
+              </button>
+              <button
+                onClick={() => scrollToSection('faq')}
+                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
                 FAQ
-              </a>
-              <a
-                href="#contact"
-                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2"
+              </button>
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
                 Contact
-              </a>
-              <button className="px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2">
+              </button>
+              <button
+                onClick={() => scrollToSection('booking')}
+                className="px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              >
                 <Calendar className="w-4 h-4" />
                 Book Now
               </button>
