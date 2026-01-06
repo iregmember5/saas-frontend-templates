@@ -88,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             {headerConfig?.logo ? (
-              <img src={headerConfig.logo.url} alt={headerConfig.logo.title} className="h-10 w-auto" />
+              <img src={`${import.meta.env.VITE_API_URL}${headerConfig.logo.url}`} alt={headerConfig.logo.title} className="h-10 w-auto" />
             ) : (
               <div className="p-2 bg-gradient-to-br from-theme-primary to-theme-secondary rounded-xl">
                 <Calendar className="w-6 h-6 text-white" />
