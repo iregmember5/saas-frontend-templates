@@ -267,6 +267,17 @@ export interface NotaryPageData {
   };
   color_theme?: ColorTheme;
   blocks: NotaryBlock[];
+  header_config?: {
+    id: number;
+    name: string;
+    logo?: { url: string; title: string } | null;
+    site_name?: string;
+    navbar_style: string;
+    sticky_navbar: boolean;
+    transparent_on_home: boolean;
+    navbar_cta?: any;
+    navigation_items: any[];
+  };
   footer_config?: {
     name: string;
     company_info: {
@@ -510,8 +521,9 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         seo_title: page.meta?.title || page.title,
         search_description: page.meta?.description || '',
       },
-      color_theme: undefined, // Never use dynamic colors
+      color_theme: undefined,
       blocks: finalBlocks,
+      header_config: page.header_config,
       footer_config: page.footer_config,
     };
   } catch (error) {

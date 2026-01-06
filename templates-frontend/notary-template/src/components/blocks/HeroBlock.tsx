@@ -19,7 +19,7 @@ export const HeroBlock: React.FC<HeroBlockProps> = ({ block }) => {
   };
 
   const handleCTAClick = (action: string, target?: string) => {
-    if (action === 'url' && target) {
+    if (target) {
       window.open(target, '_blank');
     } else if (action === 'book') {
       document.getElementById('booking-1')?.scrollIntoView({ behavior: 'smooth' });
