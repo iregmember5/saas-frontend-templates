@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, Calendar, ChevronDown } from "lucide-react";
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onServiceClick?: (serviceName: string) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onServiceClick }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -9,17 +13,47 @@ export const Navbar: React.FC = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const offset = 100;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
       setIsMobileMenuOpen(false);
+      setIsServicesOpen(false);
     }
+  };
+
+  const handleServiceClick = (serviceName: string) => {
+    scrollToSection('services-list-1');
+    setTimeout(() => {
+      const cards = document.querySelectorAll('[data-service-name]');
+      cards.forEach(card => {
+        if (card.getAttribute('data-service-name') === serviceName) {
+          card.classList.add('ring-4', 'ring-theme-accent', 'scale-105');
+          setTimeout(() => {
+            card.classList.remove('ring-4', 'ring-theme-accent', 'scale-105');
+          }, 2000);
+        }
+      });
+    }, 500);
+    setIsServicesOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.services-dropdown')) {
+        setIsServicesOpen(false);
+      }
+    };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, []);
 
   const services = [
@@ -57,12 +91,11 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
-            <div
-              className="relative"
-              onMouseEnter={() => setIsServicesOpen(true)}
-              onMouseLeave={() => setIsServicesOpen(false)}
-            >
-              <button className="flex items-center gap-1 text-gray-700 hover:text-theme-primary transition-colors font-semibold">
+            <div className="relative services-dropdown">
+              <button
+                onClick={() => setIsServicesOpen(!isServicesOpen)}
+                className="flex items-center gap-1 text-gray-700 hover:text-theme-primary transition-colors font-semibold"
+              >
                 Services
                 <ChevronDown
                   className={`w-4 h-4 transition-transform ${
@@ -72,11 +105,11 @@ export const Navbar: React.FC = () => {
               </button>
 
               {isServicesOpen && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border-2 border-gray-100 py-4">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border-2 border-gray-100 py-4 z-50">
                   {services.map((service, index) => (
                     <button
                       key={index}
-                      onClick={() => scrollToSection('services')}
+                      onClick={() => handleServiceClick(service.name)}
                       className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 transition-colors group w-full text-left"
                     >
                       <div className="flex items-center gap-3">
@@ -100,27 +133,27 @@ export const Navbar: React.FC = () => {
             </div>
 
             <button
-              onClick={() => scrollToSection('about')}
+              onClick={() => scrollToSection('booking-1')}
               className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
             >
-              About
+              Appointment
             </button>
             <button
-              onClick={() => scrollToSection('faq')}
+              onClick={() => scrollToSection('upload-1')}
               className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
             >
-              FAQ
+              Upload
             </button>
             <button
-              onClick={() => scrollToSection('contact')}
+              onClick={() => scrollToSection('payment-1')}
               className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
             >
-              Contact
+              Payment
             </button>
           </div>
 
           <button
-            onClick={() => scrollToSection('booking')}
+            onClick={() => scrollToSection('booking-1')}
             className="hidden md:flex px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all items-center gap-2"
           >
             <Calendar className="w-4 h-4" />
@@ -161,7 +194,7 @@ export const Navbar: React.FC = () => {
                     {services.map((service, index) => (
                       <button
                         key={index}
-                        onClick={() => scrollToSection('services')}
+                        onClick={() => handleServiceClick(service.name)}
                         className="flex items-center justify-between py-2 text-sm w-full text-left"
                       >
                         <span className="text-gray-600 flex items-center gap-2">
@@ -177,25 +210,25 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
               <button
-                onClick={() => scrollToSection('about')}
+                onClick={() => scrollToSection('booking-1')}
                 className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
-                About
+                Appointment
               </button>
               <button
-                onClick={() => scrollToSection('faq')}
+                onClick={() => scrollToSection('upload-1')}
                 className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
-                FAQ
+                Upload
               </button>
               <button
-                onClick={() => scrollToSection('contact')}
+                onClick={() => scrollToSection('payment-1')}
                 className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
-                Contact
+                Payment
               </button>
               <button
-                onClick={() => scrollToSection('booking')}
+                onClick={() => scrollToSection('booking-1')}
                 className="px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2"
               >
                 <Calendar className="w-4 h-4" />

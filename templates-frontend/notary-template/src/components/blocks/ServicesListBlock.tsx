@@ -27,6 +27,7 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
           {value.services.map((service, index) => (
             <div
               key={index}
+              data-service-name={service.service_name}
               className={`group relative bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 border-2 ${
                 service.is_popular
                   ? "border-theme-accent shadow-xl scale-105"
