@@ -150,6 +150,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick }) => {
             >
               Payment
             </button>
+            <button
+              onClick={() => scrollToSection('faq-1')}
+              className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
+            >
+              FAQ
+            </button>
+            <button
+              onClick={() => scrollToSection('contact-1')}
+              className="text-gray-700 hover:text-theme-primary transition-colors font-semibold"
+            >
+              Contact
+            </button>
           </div>
 
           <button
@@ -226,6 +238,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick }) => {
                 className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
               >
                 Payment
+              </button>
+              <button
+                onClick={() => scrollToSection('faq-1')}
+                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
+              >
+                FAQ
+              </button>
+              <button
+                onClick={() => scrollToSection('contact-1')}
+                className="text-gray-700 hover:text-theme-primary transition-colors font-semibold py-2 text-left w-full"
+              >
+                Contact
               </button>
               <button
                 onClick={() => scrollToSection('booking-1')}

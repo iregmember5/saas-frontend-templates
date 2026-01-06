@@ -24,37 +24,39 @@ interface BlockRendererProps {
 }
 
 export const BlockRenderer: React.FC<BlockRendererProps> = ({ block, notaryPageId }) => {
+  const blockId = block.id;
+  
   switch (block.type) {
     case 'hero':
-      return <HeroBlock block={block} />;
+      return <div id={blockId}><HeroBlock block={block} /></div>;
     case 'verified_credentials':
-      return <VerifiedCredentialsBlock block={block} />;
+      return <div id={blockId}><VerifiedCredentialsBlock block={block} /></div>;
     case 'services_list':
-      return <ServicesListBlock block={block} />;
+      return <div id={blockId}><ServicesListBlock block={block} /></div>;
     case 'booking':
-      return <BookingBlock block={block} notaryPageId={notaryPageId} />;
+      return <div id={blockId}><BookingBlock block={block} notaryPageId={notaryPageId} /></div>;
     case 'document_upload':
-      return <DocumentUploadBlock block={block} notaryPageId={notaryPageId} />;
+      return <div id={blockId}><DocumentUploadBlock block={block} notaryPageId={notaryPageId} /></div>;
     case 'payment':
-      return <PaymentBlock block={block} />;
+      return <div id={blockId}><PaymentBlock block={block} /></div>;
     case 'faq':
-      return <FAQBlock block={block} />;
+      return <div id={blockId}><FAQBlock block={block} /></div>;
     case 'testimonials':
-      return <TestimonialsBlock block={block} />;
+      return <div id={blockId}><TestimonialsBlock block={block} /></div>;
     case 'service_area':
-      return <ServiceAreaBlock block={block} />;
+      return <div id={blockId}><ServiceAreaBlock block={block} /></div>;
     case 'esignature':
-      return <ESignatureBlock block={block} />;
+      return <div id={blockId}><ESignatureBlock block={block} /></div>;
     case 'identity_verification':
-      return <IdentityVerificationBlock block={block} />;
+      return <div id={blockId}><IdentityVerificationBlock block={block} /></div>;
     case 'consent':
-      return <ConsentBlock block={block} />;
+      return <div id={blockId}><ConsentBlock block={block} /></div>;
     case 'contact_form':
-      return <ContactFormBlock block={block} />;
+      return <div id={blockId}><ContactFormBlock block={block} /></div>;
     case 'content':
-      return <ContentBlock block={block} />;
+      return <div id={blockId}><ContentBlock block={block} /></div>;
     case 'card_grid':
-      return <CardGridBlock block={block} />;
+      return <div id={blockId}><CardGridBlock block={block} /></div>;
     default:
       console.warn(`Unknown block type: ${(block as any).type}`);
       return null;
