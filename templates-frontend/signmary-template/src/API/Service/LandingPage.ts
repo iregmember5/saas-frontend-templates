@@ -1,19 +1,18 @@
+import { getApiConfig } from '../../config/api';
+
 // API Service
 const fetchLandingPageData = async () => {
   try {
-    // Use relative URL to leverage Vite proxy in development
-    // In production, you'll need to update this to the full URL
-    const isDevelopment = import.meta.env.DEV;
-    const apiUrl = isDevelopment
-      ? "/blogs/api/v2/mypages/"
-      : "https://esign-admin.signmary.com/blogs/api/v2/mypages/";
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/mypages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // In production, add the X-Frontend-Url header
-        ...(isDevelopment ? {} : { "X-Frontend-Url": "https://signmary.com" }),
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 

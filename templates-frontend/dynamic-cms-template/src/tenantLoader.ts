@@ -1,16 +1,22 @@
-// templates-frontend/dynamic-cms-template/src/tenantLoader.ts
-import axios from "axios";
+import { getApiConfig } from './config/api';
 
 const API_URL = import.meta.env.VITE_API_URL || "https://api.yourdomain.com";
 
 export async function loadTenantData() {
+  const { subdomain, tenantId } = getApiConfig();
   const domain = window.location.hostname;
 
-  const response = await axios.get(
-    `${API_URL}/api/tenant/by-domain/?domain=${domain}`
+  const response = await fetch(
+    `${API_URL}/api/tenant/by-domain/?domain=${domain}`,
+    {
+      headers: {
+        'X-Tenant-Id': tenantId,
+        'X-Subdomain': subdomain,
+      },
+    }
   );
 
-  return response.data;
+  return response.json();
 }
 
 export function applyTenantStyles(tenant: any) {

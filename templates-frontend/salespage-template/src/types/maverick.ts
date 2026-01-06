@@ -1,3 +1,5 @@
+import { getApiConfig } from '../config/api';
+
 // ===== Type Definitions =====
 export interface SalesPages {
   [key: string]: any;
@@ -16,15 +18,6 @@ export interface FeaturesPageApiResponse {
 }
 
 // ===== API Service Functions =====
-const isDevelopment = import.meta.env.DEV;
-const frontendUrl = isDevelopment
-  ? "http://localhost:5173"
-  : "https://salespages.vercel.app";
-
-const baseApiUrl = isDevelopment
-  ? "/blogs/api/v2"
-  : "https://esign-admin.signmary.com/blogs/api/v2";
-
 const imageBaseUrl = "https://esign-admin.signmary.com";
 
 export const prependImageUrl = (url: string | undefined) => {
@@ -35,13 +28,16 @@ export const prependImageUrl = (url: string | undefined) => {
 
 export const fetchLandingPageData = async (): Promise<SalesPages | null> => {
   try {
-    const apiUrl = `${baseApiUrl}/sales-pages/?fields=*`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/sales-pages/?fields=*`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -66,13 +62,16 @@ export const fetchLandingPageData = async (): Promise<SalesPages | null> => {
 // ===== NEW: Fetch all FeaturesPages =====
 export const fetchAllFeaturesPages = async (): Promise<FeaturesPageData[]> => {
   try {
-    const apiUrl = `${baseApiUrl}/features-pages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/features-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -100,13 +99,16 @@ export const fetchFeaturesPageById = async (
   id: number
 ): Promise<FeaturesPageData> => {
   try {
-    const apiUrl = `${baseApiUrl}/features-pages/${id}/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/features-pages/${id}/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -127,13 +129,16 @@ export const fetchFeaturesPageById = async (
 
 export const fetchWorkbookPageData = async (): Promise<SalesPages | null> => {
   try {
-    const apiUrl = `${baseApiUrl}/features-pages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/features-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
