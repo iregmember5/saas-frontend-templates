@@ -12,7 +12,7 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
   const { value } = block;
 
   return (
-    <section className="py-24 bg-white">
+    <section id={block.id} className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-black text-gray-900 mb-4">
@@ -24,7 +24,8 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {value.services.map((service, index) => (
+          {value.services && value.services.length > 0 ? (
+            value.services.map((service, index) => (
             <div
               key={index}
               data-service-name={service.service_name}
@@ -80,7 +81,12 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                 </button>
               )}
             </div>
-          ))}
+          )))
+          ) : (
+            <div className="col-span-full text-center text-gray-500">
+              No services available
+            </div>
+          )}
         </div>
       </div>
     </section>

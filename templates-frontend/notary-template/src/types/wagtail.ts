@@ -329,6 +329,24 @@ export interface ApiResponse {
 
 import { getApiConfig } from '../config/api';
 
+// Helper to parse StructValue strings from API
+const parseStructValue = (structStr: string): any => {
+  try {
+    const match = structStr.match(/StructValue\(({.*})\)/);
+    if (match) {
+      const objStr = match[1]
+        .replace(/'/g, '"')
+        .replace(/True/g, 'true')
+        .replace(/False/g, 'false')
+        .replace(/None/g, 'null');
+      return JSON.parse(objStr);
+    }
+  } catch (e) {
+    console.error('Failed to parse StructValue:', e);
+  }
+  return {};
+};
+
 export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
   const { mockNotaryData } = await import('../utils/mockData');
   
@@ -402,16 +420,19 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
       page.services && page.services.length > 0 && {
         type: 'services_list' as const,
         value: {
-          services: (page.services || []).map((s: any) => ({
-            service_name: s.service_name || '',
-            description: s.short_description || '',
-            starting_price: s.starting_price,
-            duration: s.duration,
-            cta_label: s.cta_label || '',
-            cta_action: s.cta_action || '',
-            cta_target: s.cta_target,
-            is_popular: s.highlight_as_popular || false,
-          })),
+          services: (page.services || []).map((s: any) => {
+            const serviceData = typeof s.value === 'string' ? parseStructValue(s.value) : s.value;
+            return {
+              service_name: serviceData.service_name || '',
+              description: serviceData.short_description || '',
+              starting_price: serviceData.starting_price || '',
+              duration: serviceData.duration || '',
+              cta_label: serviceData.cta_label || '',
+              cta_action: serviceData.cta_action || 'contact',
+              cta_target: serviceData.cta_target || '',
+              is_popular: serviceData.highlight_as_popular || false,
+            };
+          }),
         },
         id: 'services-1',
       },
