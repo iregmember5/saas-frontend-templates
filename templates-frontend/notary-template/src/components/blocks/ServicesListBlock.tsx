@@ -50,9 +50,34 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                   {service.service_name}
                 </h3>
 
-                <p className="text-gray-600 mb-6 leading-relaxed whitespace-pre-line">
-                  {service.description}
-                </p>
+                <div className="text-gray-600 mb-6 leading-relaxed space-y-2">
+                  {service.description.split(/\\r\\n|\r\n|\n/).map((line, i) => {
+                    const cleanLine = line.replace(/\\n/g, '').trim();
+                    if (!cleanLine) return null;
+                    
+                    // Check if line starts with a dot
+                    if (cleanLine.startsWith('.')) {
+                      return (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-theme-primary mt-1">•</span>
+                          <span>{cleanLine.substring(1).trim()}</span>
+                        </div>
+                      );
+                    }
+                    
+                    // Check if line has checkmark
+                    if (cleanLine.includes('✅')) {
+                      return (
+                        <div key={i} className="flex items-start gap-2">
+                          <span>✅</span>
+                          <span>{cleanLine.replace('✅', '').trim()}</span>
+                        </div>
+                      );
+                    }
+                    
+                    return <div key={i}>{cleanLine}</div>;
+                  })}
+                </div>
 
                 <div className="space-y-3 mb-8">
                   {service.starting_price && (
