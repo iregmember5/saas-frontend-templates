@@ -529,14 +529,9 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
       },
     ].filter((block): block is NotaryBlock => !!block);
 
-    // Merge: Keep mock blocks that aren't in API response
+    // Only use mock blocks that aren't provided by API
     const apiBlockIds = new Set(apiBlocks.map(b => b.id));
     const mockBlocksToKeep = mockNotaryData.blocks.filter(b => !apiBlockIds.has(b.id));
-    
-    // If no API blocks except dynamic content, use all mock blocks + dynamic blocks
-    const finalBlocks = apiBlocks.length === dynamicBlocks.length 
-      ? [...mockNotaryData.blocks.slice(0, 4), ...dynamicBlocks, ...mockNotaryData.blocks.slice(4)]
-      : [...apiBlocks, ...mockBlocksToKeep];
     
     return {
       id: page.id,
@@ -548,7 +543,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         search_description: page.meta?.description || '',
       },
       color_theme: undefined,
-      blocks: finalBlocks,
+      blocks: [...apiBlocks, ...mockBlocksToKeep],
       header_config: page.header_config,
       footer_config: page.footer_config,
     };
