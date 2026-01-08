@@ -102,33 +102,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig, se
                 />
               </button>
 
-              {isServicesOpen && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border-2 border-gray-100 py-4 z-50">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
-            <button
-              key={index}
-              onClick={() => handleServiceClick(service.service_name)}
-              className="flex items-start justify-between px-6 py-4 hover:bg-gray-50 transition-colors group w-full text-left border-b border-gray-100 last:border-0"
-            >
-              <div className="flex-1">
-                {service.is_popular && (
-                  <span className="inline-block px-2 py-1 bg-theme-accent text-white text-xs font-bold rounded mb-2">
-                    POPULAR
-                  </span>
-                )}
-                <p className="font-semibold text-gray-900 group-hover:text-theme-primary">
-                  {service.service_name}
-                </p>
-              </div>
-              {service.starting_price && (
-                <span className="text-theme-primary font-bold ml-4">
-                  {service.starting_price}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+              {isServicesOpen && services.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-96 max-h-[80vh] overflow-y-auto bg-white rounded-2xl shadow-2xl border-2 border-gray-100 py-2 z-50">
+                  {services.map((service, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleServiceClick(service.service_name)}
+                      className="flex items-start justify-between px-6 py-4 hover:bg-gray-50 transition-colors group w-full text-left border-b border-gray-100 last:border-0"
+                    >
+                      <div className="flex-1 pr-4">
+                        {service.is_popular && (
+                          <span className="inline-block px-2 py-1 bg-theme-accent text-white text-xs font-bold rounded mb-2">
+                            POPULAR
+                          </span>
+                        )}
+                        <p className="font-semibold text-gray-900 group-hover:text-theme-primary text-sm">
+                          {service.service_name}
+                        </p>
+                      </div>
+                      {service.starting_price && (
+                        <span className="text-theme-primary font-bold text-sm flex-shrink-0">
+                          {service.starting_price}
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
@@ -202,19 +200,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig, se
                     }`}
                   />
                 </button>
-                {isServicesOpen && (
-                  <div className="mt-2 ml-4 space-y-2">
+                {isServicesOpen && services.length > 0 && (
+                  <div className="mt-2 ml-4 space-y-2 max-h-64 overflow-y-auto">
                     {services.map((service, index) => (
                       <button
                         key={index}
                         onClick={() => handleServiceClick(service.service_name)}
-                        className="flex items-start justify-between py-2 text-sm w-full text-left"
+                        className="flex items-start justify-between py-2 text-sm w-full text-left gap-2"
                       >
                         <span className="text-gray-600 flex-1">
+                          {service.is_popular && (
+                            <span className="inline-block px-1.5 py-0.5 bg-theme-accent text-white text-xs font-bold rounded mr-2">
+                              HOT
+                            </span>
+                          )}
                           {service.service_name}
                         </span>
                         {service.starting_price && (
-                          <span className="text-theme-primary font-bold ml-2">
+                          <span className="text-theme-primary font-bold text-xs flex-shrink-0">
                             {service.starting_price}
                           </span>
                         )}

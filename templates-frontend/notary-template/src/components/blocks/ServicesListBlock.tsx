@@ -47,7 +47,7 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                 {service.service_name}
               </h3>
 
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-600 mb-6 leading-relaxed whitespace-pre-line">
                 {service.description}
               </p>
 
