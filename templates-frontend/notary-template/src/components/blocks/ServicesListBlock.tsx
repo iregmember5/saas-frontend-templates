@@ -75,6 +75,22 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                       );
                     }
                     
+                    // Split by period for sentences, but keep first sentence as intro
+                    if (i === 0 && cleanLine.includes('.')) {
+                      const sentences = cleanLine.split('. ').filter(s => s.trim());
+                      return (
+                        <div key={i} className="space-y-2">
+                          <div>{sentences[0]}.</div>
+                          {sentences.slice(1).map((sentence, si) => (
+                            <div key={si} className="flex items-start gap-2">
+                              <span className="text-theme-primary mt-1">•</span>
+                              <span>{sentence}{sentence.endsWith('.') ? '' : '.'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    
                     return <div key={i}>{cleanLine}</div>;
                   })}
                 </div>
