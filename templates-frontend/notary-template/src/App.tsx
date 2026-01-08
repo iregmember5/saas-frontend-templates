@@ -84,7 +84,10 @@ function App() {
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-theme-background">
-        <Navbar headerConfig={pageData.header_config} />
+        <Navbar 
+          headerConfig={pageData.header_config}
+          services={pageData.blocks.find(b => b.type === 'services_list')?.value.services || []}
+        />
 
         <main className="pt-20">
           {pageData.blocks.map((block) => (

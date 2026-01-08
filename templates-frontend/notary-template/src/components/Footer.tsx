@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Youtube } from 'lucide-react';
 
 interface FooterConfig {
   name: string;
@@ -49,6 +49,17 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ config }) => {
   if (!config) return null;
 
+  const getSocialIcon = (platform: string) => {
+    const icons: Record<string, React.ReactNode> = {
+      Facebook: <Facebook className="w-5 h-5" />,
+      Twitter: <Twitter className="w-5 h-5" />,
+      LinkedIn: <Linkedin className="w-5 h-5" />,
+      Instagram: <Instagram className="w-5 h-5" />,
+      YouTube: <Youtube className="w-5 h-5" />,
+    };
+    return icons[platform] || null;
+  };
+
   return (
     <footer className="bg-theme-text text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -59,8 +70,8 @@ export const Footer: React.FC<FooterProps> = ({ config }) => {
             {config.social_links.length > 0 && (
               <div className="flex gap-4">
                 {config.social_links.map((social, idx) => (
-                  <a key={idx} href={social.url} className="text-white/80 hover:text-white transition-colors">
-                    <i className={`${social.icon_class} w-5 h-5`}></i>
+                  <a key={idx} href={social.url} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white transition-colors">
+                    {getSocialIcon(social.platform)}
                   </a>
                 ))}
               </div>

@@ -73,10 +73,12 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                 )}
               </div>
 
-              <button className="group/btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-xl font-bold hover:shadow-xl transition-all">
-                {service.cta_label}
-                <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-              </button>
+              {service.cta_label && (
+                <button className="group/btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-xl font-bold hover:shadow-xl transition-all">
+                  {service.cta_label}
+                  <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              )}
             </div>
           ))}
         </div>

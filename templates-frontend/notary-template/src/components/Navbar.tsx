@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, Calendar, ChevronDown } from "lucide-react";
+import type { ServiceItem } from "../types/wagtail";
 
 interface NavbarProps {
   onServiceClick?: (serviceName: string) => void;
@@ -7,9 +8,10 @@ interface NavbarProps {
     logo?: { url: string; title: string } | null;
     site_name?: string;
   };
+  services?: ServiceItem[];
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig, services = [] }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -62,20 +64,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
     };
   }, []);
 
-  const services = [
-    { name: "General Notarization", price: "$15", popular: true, icon: "📝" },
-    { name: "Mobile Notary", price: "$75", popular: false, icon: "🚗" },
-    {
-      name: "Remote Online Notarization (RON)",
-      price: "$25",
-      popular: true,
-      icon: "💻",
-    },
-    { name: "Loan Signing", price: "$125", popular: false, icon: "🏠" },
-    { name: "Apostille Services", price: "$50", popular: false, icon: "🌍" },
-    { name: "I-9 Verification", price: "$20", popular: false, icon: "✅" },
-  ];
-
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -86,21 +74,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {headerConfig?.logo ? (
-              <img src={`https://esign-admin.signmary.com${headerConfig.logo.url}`} alt={headerConfig.logo.title} className="h-10 w-auto" />
+              <img src={`https://esign-admin.signmary.com${headerConfig.logo.url}`} alt={headerConfig.logo.title} className="h-8 sm:h-10 w-auto" />
             ) : (
-              <div className="p-2 bg-gradient-to-br from-theme-primary to-theme-secondary rounded-xl">
-                <Calendar className="w-6 h-6 text-white" />
+              <div className="p-1.5 sm:p-2 bg-gradient-to-br from-theme-primary to-theme-secondary rounded-xl">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             )}
-            <h1 className="text-2xl font-black bg-gradient-to-r from-theme-primary to-theme-secondary bg-clip-text text-transparent">
+            <h1 className="text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-theme-primary to-theme-secondary bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-[200px] lg:max-w-none">
               {headerConfig?.site_name || 'Notary Services'}
             </h1>
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <div className="relative services-dropdown">
               <button
                 onClick={() => setIsServicesOpen(!isServicesOpen)}
@@ -116,28 +104,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
 
               {isServicesOpen && (
                 <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border-2 border-gray-100 py-4 z-50">
-                  {services.map((service, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleServiceClick(service.name)}
-                      className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 transition-colors group w-full text-left"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{service.icon}</span>
-                        {service.popular && (
-                          <span className="px-2 py-1 bg-theme-accent text-white text-xs font-bold rounded">
-                            HOT
-                          </span>
-                        )}
-                        <span className="font-semibold text-gray-900 group-hover:text-theme-primary">
-                          {service.name}
-                        </span>
-                      </div>
-                      <span className="text-theme-primary font-bold">
-                        {service.price}
-                      </span>
-                    </button>
-                  ))}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {services.map((service, index) => (
+            <button
+              key={index}
+              onClick={() => handleServiceClick(service.service_name)}
+              className="flex items-start justify-between px-6 py-4 hover:bg-gray-50 transition-colors group w-full text-left border-b border-gray-100 last:border-0"
+            >
+              <div className="flex-1">
+                {service.is_popular && (
+                  <span className="inline-block px-2 py-1 bg-theme-accent text-white text-xs font-bold rounded mb-2">
+                    POPULAR
+                  </span>
+                )}
+                <p className="font-semibold text-gray-900 group-hover:text-theme-primary">
+                  {service.service_name}
+                </p>
+              </div>
+              {service.starting_price && (
+                <span className="text-theme-primary font-bold ml-4">
+                  {service.starting_price}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
                 </div>
               )}
             </div>
@@ -176,7 +167,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
 
           <button
             onClick={() => scrollToSection('booking-1')}
-            className="hidden md:flex px-6 py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all items-center gap-2"
+            className="hidden lg:flex px-4 xl:px-6 py-2.5 xl:py-3 bg-gradient-to-r from-theme-accent to-orange-500 text-white rounded-xl font-bold hover:shadow-xl transition-all items-center gap-2 text-sm xl:text-base flex-shrink-0"
           >
             <Calendar className="w-4 h-4" />
             Book Now
@@ -185,7 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -197,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-6 py-6 border-t border-gray-200">
+          <div className="lg:hidden mt-6 py-6 border-t border-gray-200">
             <div className="flex flex-col space-y-4">
               <div>
                 <button
@@ -216,16 +207,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onServiceClick, headerConfig }) 
                     {services.map((service, index) => (
                       <button
                         key={index}
-                        onClick={() => handleServiceClick(service.name)}
-                        className="flex items-center justify-between py-2 text-sm w-full text-left"
+                        onClick={() => handleServiceClick(service.service_name)}
+                        className="flex items-start justify-between py-2 text-sm w-full text-left"
                       >
-                        <span className="text-gray-600 flex items-center gap-2">
-                          <span>{service.icon}</span>
-                          {service.name}
+                        <span className="text-gray-600 flex-1">
+                          {service.service_name}
                         </span>
-                        <span className="text-theme-primary font-bold">
-                          {service.price}
-                        </span>
+                        {service.starting_price && (
+                          <span className="text-theme-primary font-bold ml-2">
+                            {service.starting_price}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>

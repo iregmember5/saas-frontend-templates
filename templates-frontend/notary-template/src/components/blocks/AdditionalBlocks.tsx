@@ -41,7 +41,7 @@ export const TestimonialsBlock: React.FC<{ block: TestimonialsBlockType }> = ({
                 <div className="flex items-center gap-3">
                   {testimonial.client_photo && (
                     <img
-                      src={testimonial.client_photo.url}
+                      src={`https://esign-admin.signmary.com${testimonial.client_photo.url}`}
                       alt={testimonial.client_name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
