@@ -5,6 +5,7 @@ import type { NotaryPageData } from "./types/wagtail";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { BlockRenderer } from "./components/blocks/BlockRenderer";
+import PricingBlock from "./components/blocks/PricingBlock";
 import { Loader2 } from "lucide-react";
 import "./index.css";
 
@@ -97,6 +98,10 @@ function App() {
               notaryPageId={pageData.id}
             />
           ))}
+          
+          {pageData.pricing_section?.widget_code && (
+            <PricingBlock data={pageData} />
+          )}
         </main>
 
         <Footer config={pageData.footer_config} />

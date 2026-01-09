@@ -268,6 +268,11 @@ export interface NotaryPageData {
   };
   color_theme?: ColorTheme;
   blocks: NotaryBlock[];
+  pricing_section?: {
+    heading?: string;
+    description?: string;
+    widget_code?: string;
+  };
   header_config?: {
     id: number;
     name: string;
@@ -595,6 +600,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
       },
       color_theme: undefined,
       blocks: [...apiBlocks, ...mockBlocksToKeep],
+      pricing_section: page.pricing_section,
       header_config: page.header_config,
       footer_config: page.footer_config,
     };
