@@ -88,15 +88,38 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
 const parseServiceValue = (service: any) => {
   if (typeof service.value === "string" && service.value.includes("StructValue")) {
     const parsed: any = {};
-    const fields = ['service_name', 'short_description', 'starting_price', 'duration', 'cta_label', 'cta_action', 'cta_target'];
+    const str = service.value;
     
-    fields.forEach(field => {
-      const regex = new RegExp(`'${field}':\\s*(?:\\\\"([^\\\\"]*(?:\\\\.[^\\\\"]*)*)\\\\"|'([^']*(?:\\\\'[^']*)*)')`);
-      const match = service.value.match(regex);
-      if (match) {
-        parsed[field] = (match[1] || match[2] || '').replace(/\\r\\n|\\n|\\r/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'");
+    // Extract each field with flexible quote matching
+    const extractField = (fieldName: string) => {
+      // Match: 'field': "value" or 'field': 'value' or 'field': \"value\"
+      const patterns = [
+        new RegExp(`'${fieldName}':\\s*\\\\"([^\\\\"]*(?:\\\\\\\\.[^\\\\"]*)*)\\\\"`),
+        new RegExp(`'${fieldName}':\\s*"([^"]*)"`),
+        new RegExp(`'${fieldName}':\\s*'([^']*(?:\\\\'[^']*)*)'`)
+      ];
+      
+      for (const pattern of patterns) {
+        const match = str.match(pattern);
+        if (match && match[1]) {
+          return match[1]
+            .replace(/\\r\\n/g, '\n')
+            .replace(/\\n/g, '\n')
+            .replace(/\\r/g, '\n')
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+        }
       }
-    });
+      return '';
+    };
+    
+    parsed.service_name = extractField('service_name');
+    parsed.short_description = extractField('short_description');
+    parsed.starting_price = extractField('starting_price');
+    parsed.duration = extractField('duration');
+    parsed.cta_label = extractField('cta_label');
+    parsed.cta_action = extractField('cta_action');
+    parsed.cta_target = extractField('cta_target');
     
     return parsed;
   }
