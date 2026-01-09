@@ -84,126 +84,21 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
   );
 };
 
-// Parse StructValue string format from API - Complete rewrite
+// Parse StructValue string format from API
 const parseServiceValue = (service: any) => {
-  if (
-    typeof service.value === "string" &&
-    service.value.includes("StructValue")
-  ) {
-    try {
-      const str = service.value;
-
-      // Extract content between StructValue({ and })
-      const match = str.match(/StructValue\(\{(.+)\}\)$/s);
-      if (!match) {
-        console.error("Failed to match StructValue pattern");
-        return service;
+  if (typeof service.value === "string" && service.value.includes("StructValue")) {
+    const parsed: any = {};
+    const fields = ['service_name', 'short_description', 'starting_price', 'duration', 'cta_label', 'cta_action', 'cta_target'];
+    
+    fields.forEach(field => {
+      const regex = new RegExp(`'${field}':\\s*(?:\\\\"([^\\\\"]*(?:\\\\.[^\\\\"]*)*)\\\\"|'([^']*(?:\\\\'[^']*)*)')`);
+      const match = service.value.match(regex);
+      if (match) {
+        parsed[field] = (match[1] || match[2] || '').replace(/\\r\\n|\\n|\\r/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'");
       }
-
-      const content = match[1];
-      const parsed: any = {};
-
-      // Manual parsing that handles escaped quotes properly
-      let i = 0;
-      while (i < content.length) {
-        // Skip whitespace and commas
-        while (i < content.length && /[\s,]/.test(content[i])) i++;
-        if (i >= content.length) break;
-
-        // Parse key
-        if (content[i] !== "'") break;
-        i++;
-        let key = "";
-        while (i < content.length && content[i] !== "'") {
-          if (content[i] === "\\" && i + 1 < content.length) {
-            key += content[i + 1];
-            i += 2;
-          } else {
-            key += content[i];
-            i++;
-          }
-        }
-        i++; // skip closing '
-
-        // Skip : and whitespace
-        while (i < content.length && /[\s:]/.test(content[i])) i++;
-
-        // Check value delimiter
-        let value = "";
-        if (content[i] === "\\" && content[i + 1] === '"') {
-          // Escaped double quote \"...\"
-          i += 2;
-          while (i < content.length) {
-            if (content[i] === "\\" && i + 1 < content.length) {
-              if (content[i + 1] === '"') {
-                i += 2;
-                break;
-              }
-              // Handle other escape sequences
-              if (
-                content[i + 1] === "r" ||
-                content[i + 1] === "n" ||
-                content[i + 1] === "\\"
-              ) {
-                value += content[i];
-                value += content[i + 1];
-                i += 2;
-              } else {
-                value += content[i + 1];
-                i += 2;
-              }
-            } else {
-              value += content[i];
-              i++;
-            }
-          }
-        } else if (content[i] === "'") {
-          // Single quote '...'
-          i++;
-          while (i < content.length) {
-            if (content[i] === "\\" && i + 1 < content.length) {
-              if (content[i + 1] === "'") {
-                value += "'";
-                i += 2;
-              } else if (
-                content[i + 1] === "r" ||
-                content[i + 1] === "n" ||
-                content[i + 1] === "\\"
-              ) {
-                value += content[i];
-                value += content[i + 1];
-                i += 2;
-              } else {
-                value += content[i + 1];
-                i += 2;
-              }
-            } else if (content[i] === "'") {
-              i++;
-              break;
-            } else {
-              value += content[i];
-              i++;
-            }
-          }
-        }
-
-        // Clean value - normalize line breaks
-        value = value
-          .replace(/\\r\\n/g, "\n")
-          .replace(/\\n/g, "\n")
-          .replace(/\\r/g, "\n")
-          .replace(/\\"/g, '"')
-          .replace(/\\\\/g, "\\");
-
-        parsed[key] = value;
-      }
-
-      console.log("Parsed service:", parsed);
-      return parsed;
-    } catch (e) {
-      console.error("Failed to parse service:", e, service.value);
-      return service;
-    }
+    });
+    
+    return parsed;
   }
   return service.value || service;
 };
