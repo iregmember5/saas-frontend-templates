@@ -371,15 +371,7 @@ const parseStructValue = (structStr: string): any => {
 
       // Parse value
       let value = "";
-      if (content[i] === "'") {
-        // Single-quoted value
-        i++; // skip opening quote
-        while (i < content.length && content[i] !== "'") {
-          value += content[i];
-          i++;
-        }
-        i++; // skip closing quote
-      } else if (content[i] === "\\" && content[i + 1] === '"') {
+      if (content[i] === "\\" && content[i + 1] === '"') {
         // Escaped double-quoted value (\"...\")
         i += 2; // skip \"
         while (i < content.length) {
@@ -391,6 +383,21 @@ const parseStructValue = (structStr: string): any => {
           if (content[i] === "\\" && content[i + 1] === "'") {
             value += "'";
             i += 2;
+          } else {
+            value += content[i];
+            i++;
+          }
+        }
+      } else if (content[i] === "'") {
+        // Single-quoted value
+        i++; // skip opening quote
+        while (i < content.length) {
+          if (content[i] === "\\" && content[i + 1] === "'") {
+            value += "'";
+            i += 2;
+          } else if (content[i] === "'") {
+            i++; // skip closing quote
+            break;
           } else {
             value += content[i];
             i++;
