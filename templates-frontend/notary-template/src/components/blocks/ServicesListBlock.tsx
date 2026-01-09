@@ -8,106 +8,103 @@ interface ServicesListBlockProps {
 
 // Helper function to parse description into structured bullet points
 const parseDescription = (description: string | undefined): React.ReactNode => {
-  if (!description) return null;
+  if (!description || !description.trim()) return null;
 
-  // Normalize line breaks and clean the text
-  const cleanText = description
+  // Normalize all line breaks and whitespace
+  let text = description
     .replace(/\\r\\n/g, "\n")
-    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\n")
     .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
     .trim();
 
-  // Split by newlines first
-  const lines = cleanText.split("\n").filter((line) => line.trim());
+  // Split by various delimiters: newlines, periods followed by newlines, or dots
+  const lines = text
+    .split(/\n|(?<=\.)\s*\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
-  // If we have multiple lines, treat each as a potential bullet point
-  if (lines.length > 1) {
-    return (
-      <div className="space-y-2">
-        {lines.map((line, i) => {
-          const trimmedLine = line.trim();
-          if (!trimmedLine) return null;
+  if (lines.length === 0) return null;
 
-          // Check if line already has a bullet marker
-          if (
-            trimmedLine.startsWith("•") ||
-            trimmedLine.startsWith("-") ||
-            trimmedLine.startsWith(".") ||
-            trimmedLine.startsWith("✅")
-          ) {
-            const cleanLine = trimmedLine.replace(/^[•\-\.✅]\s*/, "").trim();
-            return (
-              <div key={i} className="flex items-start gap-2">
-                <span className="text-theme-primary mt-1 flex-shrink-0">•</span>
-                <span>{cleanLine}</span>
-              </div>
-            );
-          }
+  // Create the content structure
+  const content: React.ReactNode[] = [];
+  let firstParagraph = true;
 
-          // First line is usually intro text
-          if (i === 0) {
-            return (
-              <p key={i} className="mb-2">
-                {trimmedLine}
-              </p>
-            );
-          }
+  for (const line of lines) {
+    // Remove bullet markers (., -, •, etc)
+    const cleanedLine = line.replace(/^[\.\-•✅]\s*/, "").trim();
 
-          // Subsequent lines as bullet points
-          return (
-            <div key={i} className="flex items-start gap-2">
-              <span className="text-theme-primary mt-1 flex-shrink-0">•</span>
-              <span>{trimmedLine}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
+    if (!cleanedLine) continue;
 
-  // Single block of text - split by sentences for better readability
-  const sentences = cleanText
-    .split(/(?<=[.!?])\s+/)
-    .filter((s) => s.trim())
-    .map((s) => s.trim());
-
-  if (sentences.length <= 1) {
-    return <p>{cleanText}</p>;
-  }
-
-  // First sentence as intro, rest as bullet points
-  return (
-    <div className="space-y-2">
-      <p className="mb-2">{sentences[0]}</p>
-      {sentences.slice(1).map((sentence, i) => (
-        <div key={i} className="flex items-start gap-2">
-          <span className="text-theme-primary mt-1 flex-shrink-0">•</span>
-          <span>{sentence}</span>
+    // First non-empty line is the intro paragraph
+    if (
+      firstParagraph &&
+      !line.startsWith(".") &&
+      !line.startsWith("-") &&
+      !line.startsWith("•")
+    ) {
+      content.push(
+        <p key={`intro-${content.length}`} className="mb-3 text-gray-600">
+          {cleanedLine}
+        </p>
+      );
+      firstParagraph = false;
+    } else {
+      // Everything else becomes bullet points
+      content.push(
+        <div
+          key={`bullet-${content.length}`}
+          className="flex items-start gap-2 text-gray-600"
+        >
+          <span className="text-theme-primary mt-1 flex-shrink-0 font-bold">
+            •
+          </span>
+          <span>{cleanedLine}</span>
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
+  }
+
+  return content.length > 0 ? <div className="space-y-2">{content}</div> : null;
 };
 
 // Parse StructValue string format from API
 const parseServiceValue = (service: any) => {
-  if (typeof service.value === 'string' && service.value.includes('StructValue')) {
+  if (
+    typeof service.value === "string" &&
+    service.value.includes("StructValue")
+  ) {
     try {
       // Extract the content between the outermost braces
       const content = service.value.match(/StructValue\(\{(.+)\}\)$/s)?.[1];
       if (!content) return service;
-      
+
       const parsed: any = {};
-      // Match key-value pairs like 'key': 'value'
-      const regex = /'([^']+)':\s*'([^']*)'/g;
-      let match;
-      while ((match = regex.exec(content)) !== null) {
-        parsed[match[1]] = match[2];
+
+      // Split by comma, but be careful with commas inside quotes
+      const parts = content.split(/,\s*(?=\w+\s*:)/);
+
+      for (const part of parts) {
+        // Match key: 'value' or key: 'multi-line value'
+        const match = part.match(/(\w+)\s*:\s*'([^']*)'/s);
+        if (match) {
+          const key = match[1];
+          let value = match[2];
+
+          // Clean up escaped characters and normalize whitespace
+          value = value
+            .replace(/\\r\\n/g, "\n")
+            .replace(/\\n/g, "\n")
+            .replace(/\r\n/g, "\n")
+            .replace(/\\'/g, "'")
+            .trim();
+
+          parsed[key] = value;
+        }
       }
+
       return parsed;
     } catch (e) {
-      console.error('Failed to parse service:', e);
+      console.error("Failed to parse service:", e);
       return service;
     }
   }
