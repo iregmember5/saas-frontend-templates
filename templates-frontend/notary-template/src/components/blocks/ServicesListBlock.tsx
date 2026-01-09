@@ -92,18 +92,23 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
 
 // Parse StructValue string format from API
 const parseServiceValue = (service: any) => {
-  if (typeof service.value === 'string' && service.value.startsWith('StructValue')) {
-    const match = service.value.match(/\{([^}]+)\}/);
-    if (match) {
-      const pairs = match[1].split("', '");
+  if (typeof service.value === 'string' && service.value.includes('StructValue')) {
+    try {
+      // Extract the content between the outermost braces
+      const content = service.value.match(/StructValue\(\{(.+)\}\)$/s)?.[1];
+      if (!content) return service;
+      
       const parsed: any = {};
-      pairs.forEach((pair: string) => {
-        const [key, val] = pair.split("': '");
-        const cleanKey = key.replace(/^'/, '');
-        const cleanVal = val?.replace(/'$/, '') || '';
-        parsed[cleanKey] = cleanVal;
-      });
+      // Match key-value pairs like 'key': 'value'
+      const regex = /'([^']+)':\s*'([^']*)'/g;
+      let match;
+      while ((match = regex.exec(content)) !== null) {
+        parsed[match[1]] = match[2];
+      }
       return parsed;
+    } catch (e) {
+      console.error('Failed to parse service:', e);
+      return service;
     }
   }
   return service.value || service;
