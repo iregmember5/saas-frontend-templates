@@ -170,7 +170,23 @@ export const mockNotaryData: NotaryPageData = {
       type: "testimonials",
       value: {
         display_type: "manual",
-        testimonials: [],
+        testimonials: [
+          {
+            client_name: "Sarah Johnson",
+            rating: 5,
+            testimonial_text: "Absolutely exceptional service! The notary came to my home within hours and made the entire process seamless. Professional, friendly, and incredibly efficient. I highly recommend their mobile notary services to anyone needing quick and reliable document notarization.",
+          },
+          {
+            client_name: "Michael Chen",
+            rating: 5,
+            testimonial_text: "I needed urgent notarization for a real estate closing and they saved the day! Available 24/7, arrived on time, and walked me through every step with patience and expertise. The pricing was fair and transparent. This is the only notary service I'll use from now on.",
+          },
+          {
+            client_name: "Emily Rodriguez",
+            rating: 5,
+            testimonial_text: "Outstanding experience from start to finish! The remote online notarization was so convenient - I completed everything from my office in just 20 minutes. The notary was knowledgeable, courteous, and made me feel completely at ease. Five stars all the way!",
+          },
+        ],
         max_reviews: 3,
       },
       id: "testimonials-1",

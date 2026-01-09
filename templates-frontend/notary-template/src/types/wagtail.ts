@@ -378,8 +378,14 @@ const parseStructValue = (structStr: string): any => {
             i += 2; // skip closing \"
             break;
           }
-          value += content[i];
-          i++;
+          // Handle escaped apostrophes within the value
+          if (content[i] === '\\' && content[i + 1] === "'") {
+            value += "'";
+            i += 2;
+          } else {
+            value += content[i];
+            i++;
+          }
         }
       }
       
@@ -524,7 +530,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
         },
         id: 'upload-1',
       },
-      page.testimonials && page.testimonials.items && page.testimonials.items.length > 0 && {
+      page.testimonials && (page.testimonials.items && page.testimonials.items.length > 0 || page.testimonials.display_type === 'google') && {
         type: 'testimonials' as const,
         value: {
           display_type: page.testimonials.display_type || 'manual',
