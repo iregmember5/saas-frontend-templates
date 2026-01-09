@@ -30,10 +30,23 @@ export const HeroBlock: React.FC<HeroBlockProps> = ({ block }) => {
     }
   };
 
+  const backendBaseUrl = "https://esign-admin.signmary.com";
+  const backgroundImageUrl = value.background_image?.url
+    ? value.background_image.url.startsWith("http")
+      ? value.background_image.url
+      : `${backendBaseUrl}${value.background_image.url}`
+    : null;
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Always use gradient background - ignore API background settings */}
-      <div className="absolute inset-0 bg-gradient-to-br from-theme-primary via-theme-secondary to-theme-accent" />
+      <div 
+        className="absolute inset-0 bg-gradient-to-br from-theme-primary via-theme-secondary to-theme-accent"
+        style={backgroundImageUrl ? {
+          backgroundImage: `url(${backgroundImageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        } : {}}
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
         {value.show_location_badge && value.location_text && (

@@ -90,12 +90,32 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
   );
 };
 
+// Parse StructValue string format from API
+const parseServiceValue = (service: any) => {
+  if (typeof service.value === 'string' && service.value.startsWith('StructValue')) {
+    const match = service.value.match(/\{([^}]+)\}/);
+    if (match) {
+      const pairs = match[1].split("', '");
+      const parsed: any = {};
+      pairs.forEach((pair: string) => {
+        const [key, val] = pair.split("': '");
+        const cleanKey = key.replace(/^'/, '');
+        const cleanVal = val?.replace(/'$/, '') || '';
+        parsed[cleanKey] = cleanVal;
+      });
+      return parsed;
+    }
+  }
+  return service.value || service;
+};
+
 export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
   block,
 }) => {
   const { value } = block;
+  const parsedServices = value.services?.map(parseServiceValue) || [];
 
-  console.log("ServicesListBlock - services:", value.services);
+  console.log("ServicesListBlock - services:", parsedServices);
 
   return (
     <section id={block.id} className="py-24 bg-white">
@@ -110,8 +130,8 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {value.services && value.services.length > 0 ? (
-            value.services.map((service, index) => {
+          {parsedServices && parsedServices.length > 0 ? (
+            parsedServices.map((service, index) => {
               // Get description from either field
               const description =
                 service.short_description || service.description || "";
