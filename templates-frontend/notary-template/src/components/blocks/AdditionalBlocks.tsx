@@ -20,7 +20,7 @@ export const TestimonialsBlock: React.FC<{ block: TestimonialsBlockType }> = ({
     <section className="py-20 bg-gradient-to-br from-theme-secondary/5 to-theme-primary/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl font-bold text-center text-theme-text mb-12">
-          Client Testimonials
+          Testimonials
         </h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

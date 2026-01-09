@@ -90,6 +90,7 @@ export interface ServiceAreaBlock {
 export interface ServiceItem {
   service_name: string;
   description: string;
+  short_description?: string;
   starting_price?: string;
   duration?: string;
   cta_label: string;

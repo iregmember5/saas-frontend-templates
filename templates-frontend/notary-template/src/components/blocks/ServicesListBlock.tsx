@@ -31,7 +31,7 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
               <div
                 key={index}
                 data-service-name={service.service_name}
-                className={`group relative bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 border-2 ${
+                className={`group relative bg-white rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 border-2 flex flex-col ${
                   service.is_popular
                     ? "border-theme-accent shadow-xl scale-105"
                     : "border-gray-200 hover:border-theme-primary"
@@ -50,8 +50,8 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                   {service.service_name}
                 </h3>
 
-                <div className="text-gray-600 mb-6 leading-relaxed space-y-2">
-                  {service.description.split(/\\r\\n|\r\n|\n/).map((line, i) => {
+                <div className="text-gray-600 mb-6 leading-relaxed space-y-2 flex-grow">
+                  {(service.short_description || service.description || '').split(/\\r\\n|\r\n|\n/).map((line, i) => {
                     const cleanLine = line.replace(/\\n/g, '').trim();
                     if (!cleanLine) return null;
                     
@@ -117,12 +117,14 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                   )}
                 </div>
 
-                {service.cta_label && (
-                  <button className="group/btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-xl font-bold hover:shadow-xl transition-all">
-                    {service.cta_label}
-                    <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                  </button>
-                )}
+                <div className="mt-auto">
+                  {service.cta_label && (
+                    <button className="group/btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-xl font-bold hover:shadow-xl transition-all">
+                      {service.cta_label}
+                      <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))
           ) : (
