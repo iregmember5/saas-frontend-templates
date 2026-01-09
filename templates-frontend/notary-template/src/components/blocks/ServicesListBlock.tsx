@@ -8,23 +8,19 @@ interface ServicesListBlockProps {
 
 // Helper function to parse description into structured bullet points
 const parseDescription = (description: string | undefined): React.ReactNode => {
-  console.log("parseDescription INPUT:", description);
-
   if (!description || !description.trim()) {
-    console.log("parseDescription: Empty description");
     return <p className="text-gray-500 italic">No description available</p>;
   }
 
-  // Normalize all line breaks - handle both escaped and real line breaks
+  // Normalize all line breaks - handle both escaped and literal versions
   let text = description
-    .replace(/\\r\\n/g, "\n")
-    .replace(/\\n/g, "\n")
-    .replace(/\\r/g, "\n")
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
+    .replace(/\\r\\n/g, "\n") // \r\n in API
+    .replace(/\\n/g, "\n") // \n in API
+    .replace(/\\r/g, "\n") // \r in API
+    .replace(/\r\n/g, "\n") // Real CRLF
+    .replace(/\r/g, "\n") // Real CR
+    .replace(/rn/g, "\n") // Literal 'rn' that slipped through
     .trim();
-
-  console.log("parseDescription NORMALIZED:", text);
 
   // Split by newlines and filter empty lines
   const lines = text
@@ -32,10 +28,7 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
-  console.log("parseDescription LINES:", lines);
-
   if (lines.length === 0) {
-    console.log("parseDescription: No lines after split");
     return <p className="text-gray-500 italic">No description available</p>;
   }
 
@@ -73,7 +66,7 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
       content.push(
         <div
           key={`bullet-${content.length}`}
-          className="flex items-start gap-2 text-gray-600"
+          className="flex items-start gap-2 text-gray-600 leading-relaxed"
         >
           <span className="text-theme-primary mt-1 flex-shrink-0 font-bold">
             •
@@ -84,7 +77,6 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
     }
   }
 
-  console.log("parseDescription OUTPUT: content items =", content.length);
   return content.length > 0 ? (
     <div className="space-y-2">{content}</div>
   ) : (
@@ -92,7 +84,7 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
   );
 };
 
-// Parse StructValue string format from API - Improved version
+// Parse StructValue string format from API - Complete rewrite
 const parseServiceValue = (service: any) => {
   if (
     typeof service.value === "string" &&
@@ -100,142 +92,106 @@ const parseServiceValue = (service: any) => {
   ) {
     try {
       const str = service.value;
-      const parsed: any = {};
 
-      // Find all key-value pairs in the format 'key': 'value' or 'key': \"value\"
-      // This regex handles escaped quotes and newlines inside values
-      let i = str.indexOf("{") + 1;
-      const end = str.lastIndexOf("}");
-
-      while (i < end) {
-        // Skip whitespace and commas
-        while (
-          i < end &&
-          (str[i] === " " ||
-            str[i] === "," ||
-            str[i] === "\n" ||
-            str[i] === "\r")
-        )
-          i++;
-        if (i >= end) break;
-
-        // Parse key (between single quotes)
-        if (str[i] !== "'") break;
-        i++; // skip opening quote
-        let key = "";
-        while (i < end && str[i] !== "'") {
-          if (str[i] === "\\" && i + 1 < end) {
-            key += str[i + 1];
-            i += 2;
-          } else {
-            key += str[i];
-            i++;
-          }
-        }
-        i++; // skip closing quote
-
-        // Skip colon and whitespace
-        while (i < end && (str[i] === ":" || str[i] === " ")) i++;
-
-        // Check if value is wrapped in escaped double quotes \" or single quotes '
-        let valueDelimiter = "'";
-        if (str[i] === "\\" && i + 1 < end && str[i + 1] === '"') {
-          // Value is like \"text\"
-          valueDelimiter = '\\"';
-          i += 2; // skip \"
-        } else if (str[i] === "'") {
-          i++; // skip opening '
-        } else {
-          break;
-        }
-
-        // Parse value
-        let value = "";
-        if (valueDelimiter === '\\"') {
-          // Looking for closing \"
-          while (i < end) {
-            if (str[i] === "\\" && i + 1 < end) {
-              if (str[i + 1] === '"') {
-                // Found closing \"
-                i += 2;
-                break;
-              } else if (str[i + 1] === "r" || str[i + 1] === "n") {
-                // Handle \r\n or \n
-                if (
-                  str[i + 1] === "r" &&
-                  i + 2 < end &&
-                  str[i + 2] === "\\" &&
-                  i + 3 < end &&
-                  str[i + 3] === "n"
-                ) {
-                  value += "\n";
-                  i += 4;
-                } else if (str[i + 1] === "n") {
-                  value += "\n";
-                  i += 2;
-                } else {
-                  value += "\n";
-                  i += 2;
-                }
-              } else if (str[i + 1] === "'") {
-                value += "'";
-                i += 2;
-              } else if (str[i + 1] === "\\") {
-                value += "\\";
-                i += 2;
-              } else {
-                value += str[i + 1];
-                i += 2;
-              }
-            } else {
-              value += str[i];
-              i++;
-            }
-          }
-        } else {
-          // Looking for closing '
-          while (i < end && str[i] !== "'") {
-            if (str[i] === "\\" && i + 1 < end) {
-              const nextChar = str[i + 1];
-              if (nextChar === "r" || nextChar === "n") {
-                if (
-                  nextChar === "r" &&
-                  i + 2 < end &&
-                  str[i + 2] === "\\" &&
-                  i + 3 < end &&
-                  str[i + 3] === "n"
-                ) {
-                  value += "\n";
-                  i += 4;
-                } else if (nextChar === "n") {
-                  value += "\n";
-                  i += 2;
-                } else {
-                  value += "\n";
-                  i += 2;
-                }
-              } else if (nextChar === "'") {
-                value += "'";
-                i += 2;
-              } else if (nextChar === "\\") {
-                value += "\\";
-                i += 2;
-              } else {
-                value += str[i + 1];
-                i += 2;
-              }
-            } else {
-              value += str[i];
-              i++;
-            }
-          }
-          i++; // skip closing '
-        }
-
-        parsed[key] = value.trim();
+      // Extract content between StructValue({ and })
+      const match = str.match(/StructValue\(\{(.+)\}\)$/s);
+      if (!match) {
+        console.error("Failed to match StructValue pattern");
+        return service;
       }
 
-      console.log("Parsed service:", parsed);
+      const content = match[1];
+      const parsed: any = {};
+
+      // Regex to match key-value pairs, handling both ' and \" delimiters
+      // Matches: 'key': 'value' OR 'key': \"value\"
+      const regex = /'([^']+)':\s*(?:'([^']*)'|\\?"([^\\]*)\\?")/gs;
+      let m;
+
+      while ((m = regex.exec(content)) !== null) {
+        const key = m[1];
+        // Value is in group 2 (single quotes) or group 3 (escaped double quotes)
+        let value = m[2] !== undefined ? m[2] : m[3] || "";
+
+        // Clean up escape sequences
+        value = value
+          .replace(/\\r\\n/g, "\n") // \r\n -> newline
+          .replace(/\\n/g, "\n") // \n -> newline
+          .replace(/\\r/g, "\n") // \r -> newline
+          .replace(/\\'/g, "'") // \' -> '
+          .replace(/\\"/g, '"') // \" -> "
+          .replace(/\\\\/g, "\\") // \\ -> \
+          .trim();
+
+        parsed[key] = value;
+      }
+
+      // If regex didn't capture anything, try manual parsing
+      if (Object.keys(parsed).length === 0) {
+        console.warn("Regex parsing failed, attempting manual parse");
+
+        let i = 0;
+        while (i < content.length) {
+          // Skip whitespace and commas
+          while (i < content.length && /[\s,]/.test(content[i])) i++;
+          if (i >= content.length) break;
+
+          // Parse key
+          if (content[i] !== "'") break;
+          i++;
+          let key = "";
+          while (i < content.length && content[i] !== "'") {
+            key += content[i];
+            i++;
+          }
+          i++; // skip closing '
+
+          // Skip : and whitespace
+          while (i < content.length && /[\s:]/.test(content[i])) i++;
+
+          // Check value delimiter
+          let value = "";
+          if (content[i] === "\\" && content[i + 1] === '"') {
+            // Escaped double quote \"...\"
+            i += 2;
+            while (i < content.length) {
+              if (content[i] === "\\" && content[i + 1] === '"') {
+                i += 2;
+                break;
+              }
+              value += content[i];
+              i++;
+            }
+          } else if (content[i] === "'") {
+            // Single quote '...'
+            i++;
+            while (i < content.length && content[i] !== "'") {
+              value += content[i];
+              i++;
+            }
+            i++;
+          }
+
+          // Clean value
+          value = value
+            .replace(/\\r\\n/g, "\n")
+            .replace(/\\n/g, "\n")
+            .replace(/\\r/g, "\n")
+            .replace(/\\'/g, "'")
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, "\\")
+            .trim();
+
+          parsed[key] = value;
+        }
+      }
+
+      console.log(
+        "Parsed service:",
+        service.value.substring(0, 100) + "...",
+        "->",
+        parsed
+      );
       return parsed;
     } catch (e) {
       console.error("Failed to parse service:", e, service.value);
@@ -250,9 +206,6 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
 }) => {
   const { value } = block;
   const parsedServices = value.services?.map(parseServiceValue) || [];
-
-  console.log("ServicesListBlock - RAW services:", value.services);
-  console.log("ServicesListBlock - PARSED services:", parsedServices);
 
   return (
     <section id={block.id} className="py-24 bg-white">
@@ -269,19 +222,12 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {parsedServices && parsedServices.length > 0 ? (
             parsedServices.map((service, index) => {
-              console.log(`Service ${index}:`, service);
-
               // Get description from either field - prioritize short_description
               const description =
                 service.short_description || service.description || "";
-              console.log(
-                `Description for ${service.service_name}:`,
-                description
-              );
 
               // Get CTA label - provide default if empty
               const ctaLabel = service.cta_label?.trim() || "Learn More";
-              // Check if we should show the button
               const showButton = Boolean(ctaLabel);
 
               return (
@@ -340,34 +286,23 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
                       <button
                         className="group/btn w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-theme-primary to-theme-secondary text-white rounded-xl font-bold hover:shadow-xl transition-all"
                         onClick={() => {
-                          // Handle different CTA actions
                           if (
                             service.cta_action === "url" &&
                             service.cta_target
                           ) {
                             window.open(service.cta_target, "_blank");
                           } else if (service.cta_action === "book") {
-                            // Scroll to booking section or trigger booking modal
-                            const bookingSection =
-                              document.querySelector('[id*="booking"]');
-                            bookingSection?.scrollIntoView({
-                              behavior: "smooth",
-                            });
+                            document
+                              .querySelector('[id*="booking"]')
+                              ?.scrollIntoView({ behavior: "smooth" });
                           } else if (service.cta_action === "contact") {
-                            // Scroll to contact section
-                            const contactSection =
-                              document.querySelector('[id*="contact"]');
-                            contactSection?.scrollIntoView({
-                              behavior: "smooth",
-                            });
+                            document
+                              .querySelector('[id*="contact"]')
+                              ?.scrollIntoView({ behavior: "smooth" });
                           } else {
-                            // Default: scroll to contact or do nothing
-                            const contactSection = document.querySelector(
-                              '[id*="contact"], [id*="booking"]'
-                            );
-                            contactSection?.scrollIntoView({
-                              behavior: "smooth",
-                            });
+                            document
+                              .querySelector('[id*="contact"], [id*="booking"]')
+                              ?.scrollIntoView({ behavior: "smooth" });
                           }
                         }}
                       >
