@@ -486,6 +486,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
             return {
               service_name: serviceData.service_name || '',
               description: serviceData.short_description || '',
+              short_description: serviceData.short_description || '',
               starting_price: serviceData.starting_price || '',
               duration: serviceData.duration || '',
               cta_label: serviceData.cta_label || '',
