@@ -82,44 +82,101 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
     <p className="text-gray-500 italic">No description available</p>
   );
 };
-// Parse StructValue string format from API
+
+// Parse StructValue string format from API - Improved version
 const parseServiceValue = (service: any) => {
   if (
     typeof service.value === "string" &&
     service.value.includes("StructValue")
   ) {
     try {
-      // Extract the content between the outermost braces
-      const content = service.value.match(/StructValue\(\{(.+)\}\)$/s)?.[1];
-      if (!content) return service;
-
+      const str = service.value;
       const parsed: any = {};
 
-      // Split by comma, but be careful with commas inside quotes
-      const parts = content.split(/,\s*(?=\w+\s*:)/);
+      // Find all key-value pairs in the format 'key': 'value'
+      // This regex handles escaped quotes and newlines inside values
+      let i = str.indexOf("{") + 1;
+      const end = str.lastIndexOf("}");
 
-      for (const part of parts) {
-        // Match key: 'value' or key: 'multi-line value'
-        const match = part.match(/(\w+)\s*:\s*'([^']*)'/s);
-        if (match) {
-          const key = match[1];
-          let value = match[2];
+      while (i < end) {
+        // Skip whitespace and commas
+        while (
+          i < end &&
+          (str[i] === " " ||
+            str[i] === "," ||
+            str[i] === "\n" ||
+            str[i] === "\r")
+        )
+          i++;
+        if (i >= end) break;
 
-          // Clean up escaped characters and normalize whitespace
-          value = value
-            .replace(/\\r\\n/g, "\n")
-            .replace(/\\n/g, "\n")
-            .replace(/\r\n/g, "\n")
-            .replace(/\\'/g, "'")
-            .trim();
-
-          parsed[key] = value;
+        // Parse key (between quotes)
+        if (str[i] !== "'") break;
+        i++; // skip opening quote
+        let key = "";
+        while (i < end && str[i] !== "'") {
+          if (str[i] === "\\" && i + 1 < end) {
+            key += str[i + 1];
+            i += 2;
+          } else {
+            key += str[i];
+            i++;
+          }
         }
+        i++; // skip closing quote
+
+        // Skip colon and whitespace
+        while (i < end && (str[i] === ":" || str[i] === " ")) i++;
+
+        // Parse value (between quotes)
+        if (str[i] !== "'") break;
+        i++; // skip opening quote
+        let value = "";
+        while (i < end && str[i] !== "'") {
+          if (str[i] === "\\" && i + 1 < end) {
+            // Handle escaped characters
+            const nextChar = str[i + 1];
+            if (nextChar === "r" || nextChar === "n") {
+              // Check for \r\n or just \n or \r
+              if (
+                nextChar === "r" &&
+                i + 2 < end &&
+                str[i + 2] === "\\" &&
+                str[i + 3] === "n"
+              ) {
+                value += "\n";
+                i += 4;
+              } else if (nextChar === "n") {
+                value += "\n";
+                i += 2;
+              } else {
+                value += "\n";
+                i += 2;
+              }
+            } else if (nextChar === "'") {
+              value += "'";
+              i += 2;
+            } else if (nextChar === "\\") {
+              value += "\\";
+              i += 2;
+            } else {
+              value += str[i + 1];
+              i += 2;
+            }
+          } else {
+            value += str[i];
+            i++;
+          }
+        }
+        i++; // skip closing quote
+
+        parsed[key] = value.trim();
       }
 
+      console.log("Parsed service data:", parsed);
       return parsed;
     } catch (e) {
-      console.error("Failed to parse service:", e);
+      console.error("Failed to parse service:", e, service.value);
       return service;
     }
   }
@@ -149,12 +206,19 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {parsedServices && parsedServices.length > 0 ? (
             parsedServices.map((service, index) => {
-              // Get description from either field
+              console.log(`Service ${index}:`, service);
+
+              // Get description from either field - prioritize short_description
               const description =
                 service.short_description || service.description || "";
+              console.log(
+                `Description for ${service.service_name}:`,
+                description
+              );
+
               // Get CTA label - provide default if empty
-              const ctaLabel = service.cta_label || "Learn More";
-              // Check if we should show the button (show if there's any label)
+              const ctaLabel = service.cta_label?.trim() || "Learn More";
+              // Check if we should show the button
               const showButton = Boolean(ctaLabel);
 
               return (
