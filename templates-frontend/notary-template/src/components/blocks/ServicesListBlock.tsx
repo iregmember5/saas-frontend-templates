@@ -8,42 +8,54 @@ interface ServicesListBlockProps {
 
 // Helper function to parse description into structured bullet points
 const parseDescription = (description: string | undefined): React.ReactNode => {
-  if (!description || !description.trim()) return null;
+  if (!description || !description.trim()) {
+    return <p className="text-gray-500 italic">No description available</p>;
+  }
 
-  // Normalize all line breaks and whitespace
+  // Normalize all line breaks - handle both escaped and real line breaks
   let text = description
     .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
     .replace(/\\r/g, "\n")
     .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
     .trim();
 
-  // Split by various delimiters: newlines, periods followed by newlines, or dots
+  // Split by newlines and filter empty lines
   const lines = text
-    .split(/\n|(?<=\.)\s*\n/)
+    .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
-  if (lines.length === 0) return null;
+  if (lines.length === 0) {
+    return <p className="text-gray-500 italic">No description available</p>;
+  }
+
+  // If single line without bullet markers, return as paragraph
+  if (lines.length === 1 && !lines[0].match(/^[\.\-•✅]/)) {
+    return <p className="text-gray-600 leading-relaxed">{lines[0]}</p>;
+  }
 
   // Create the content structure
   const content: React.ReactNode[] = [];
   let firstParagraph = true;
 
   for (const line of lines) {
+    // Check if line starts with bullet marker
+    const isBullet = /^[\.\-•✅]\s/.test(line);
+
     // Remove bullet markers (., -, •, etc)
     const cleanedLine = line.replace(/^[\.\-•✅]\s*/, "").trim();
 
     if (!cleanedLine) continue;
 
-    // First non-empty line is the intro paragraph
-    if (
-      firstParagraph &&
-      !line.startsWith(".") &&
-      !line.startsWith("-") &&
-      !line.startsWith("•")
-    ) {
+    // First non-bullet line is intro paragraph
+    if (firstParagraph && !isBullet) {
       content.push(
-        <p key={`intro-${content.length}`} className="mb-3 text-gray-600">
+        <p
+          key={`intro-${content.length}`}
+          className="mb-3 text-gray-600 leading-relaxed"
+        >
           {cleanedLine}
         </p>
       );
@@ -64,9 +76,12 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
     }
   }
 
-  return content.length > 0 ? <div className="space-y-2">{content}</div> : null;
+  return content.length > 0 ? (
+    <div className="space-y-2">{content}</div>
+  ) : (
+    <p className="text-gray-500 italic">No description available</p>
+  );
 };
-
 // Parse StructValue string format from API
 const parseServiceValue = (service: any) => {
   if (
