@@ -84,44 +84,119 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
   );
 };
 
-// Parse StructValue string format from API
+// Parse StructValue string format from API - Complete rewrite
 const parseServiceValue = (service: any) => {
-  if (typeof service.value === "string" && service.value.includes("StructValue")) {
-    const parsed: any = {};
-    const str = service.value;
-    
-    // Extract each field with flexible quote matching
-    const extractField = (fieldName: string) => {
-      // Match: 'field': "value" or 'field': 'value' or 'field': \"value\"
-      const patterns = [
-        new RegExp(`'${fieldName}':\\s*\\\\"([^\\\\"]*(?:\\\\\\\\.[^\\\\"]*)*)\\\\"`),
-        new RegExp(`'${fieldName}':\\s*"([^"]*)"`),
-        new RegExp(`'${fieldName}':\\s*'([^']*(?:\\\\'[^']*)*)'`)
-      ];
-      
-      for (const pattern of patterns) {
-        const match = str.match(pattern);
-        if (match && match[1]) {
-          return match[1]
-            .replace(/\\r\\n/g, '\n')
-            .replace(/\\n/g, '\n')
-            .replace(/\\r/g, '\n')
+  if (
+    typeof service.value === "string" &&
+    service.value.includes("StructValue")
+  ) {
+    try {
+      const str = service.value;
+
+      // Extract content between StructValue({ and })
+      const match = str.match(/StructValue\(\{(.+)\}\)$/s);
+      if (!match) {
+        console.error("Failed to match StructValue pattern");
+        return service;
+      }
+
+      const content = match[1];
+      const parsed: any = {};
+
+      // Regex to match key-value pairs, handling both ' and \" delimiters
+      // Matches: 'key': 'value' OR 'key': \"value\"
+      const regex = /'([^']+)':\s*(?:'([^']*)'|\\?"([^\\]*)\\?")/gs;
+      let m;
+
+      while ((m = regex.exec(content)) !== null) {
+        const key = m[1];
+        // Value is in group 2 (single quotes) or group 3 (escaped double quotes)
+        let value = m[2] !== undefined ? m[2] : m[3] || "";
+
+        // Clean up escape sequences
+        value = value
+          .replace(/\\r\\n/g, "\n") // \r\n -> newline
+          .replace(/\\n/g, "\n") // \n -> newline
+          .replace(/\\r/g, "\n") // \r -> newline
+          .replace(/\\'/g, "'") // \' -> '
+          .replace(/\\"/g, '"') // \" -> "
+          .replace(/\\\\/g, "\\") // \\ -> \
+          .trim();
+
+        parsed[key] = value;
+      }
+
+      // If regex didn't capture anything, try manual parsing
+      if (Object.keys(parsed).length === 0) {
+        console.warn("Regex parsing failed, attempting manual parse");
+
+        let i = 0;
+        while (i < content.length) {
+          // Skip whitespace and commas
+          while (i < content.length && /[\s,]/.test(content[i])) i++;
+          if (i >= content.length) break;
+
+          // Parse key
+          if (content[i] !== "'") break;
+          i++;
+          let key = "";
+          while (i < content.length && content[i] !== "'") {
+            key += content[i];
+            i++;
+          }
+          i++; // skip closing '
+
+          // Skip : and whitespace
+          while (i < content.length && /[\s:]/.test(content[i])) i++;
+
+          // Check value delimiter
+          let value = "";
+          if (content[i] === "\\" && content[i + 1] === '"') {
+            // Escaped double quote \"...\"
+            i += 2;
+            while (i < content.length) {
+              if (content[i] === "\\" && content[i + 1] === '"') {
+                i += 2;
+                break;
+              }
+              value += content[i];
+              i++;
+            }
+          } else if (content[i] === "'") {
+            // Single quote '...'
+            i++;
+            while (i < content.length && content[i] !== "'") {
+              value += content[i];
+              i++;
+            }
+            i++;
+          }
+
+          // Clean value
+          value = value
+            .replace(/\\r\\n/g, "\n")
+            .replace(/\\n/g, "\n")
+            .replace(/\\r/g, "\n")
+            .replace(/\\'/g, "'")
             .replace(/\\"/g, '"')
-            .replace(/\\'/g, "'");
+            .replace(/\\\\/g, "\\")
+            .trim();
+
+          parsed[key] = value;
         }
       }
-      return '';
-    };
-    
-    parsed.service_name = extractField('service_name');
-    parsed.short_description = extractField('short_description');
-    parsed.starting_price = extractField('starting_price');
-    parsed.duration = extractField('duration');
-    parsed.cta_label = extractField('cta_label');
-    parsed.cta_action = extractField('cta_action');
-    parsed.cta_target = extractField('cta_target');
-    
-    return parsed;
+
+      console.log(
+        "Parsed service:",
+        service.value.substring(0, 100) + "...",
+        "->",
+        parsed
+      );
+      return parsed;
+    } catch (e) {
+      console.error("Failed to parse service:", e, service.value);
+      return service;
+    }
   }
   return service.value || service;
 };
