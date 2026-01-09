@@ -342,46 +342,45 @@ const parseStructValue = (structStr: string): any => {
     const match = structStr.match(/StructValue\(\{(.*)\}\)$/s);
     if (!match) return {};
 
-    let content = match[1];
+    const content = match[1];
     const result: any = {};
-
-    // State machine to parse key-value pairs
     let i = 0;
+
     while (i < content.length) {
       // Skip whitespace
       while (i < content.length && /\s/.test(content[i])) i++;
       if (i >= content.length) break;
 
-      // Parse key (format: 'key':)
+      // Parse key
       if (content[i] !== "'") break;
-      i++; // skip opening quote
+      i++;
       let key = "";
       while (i < content.length && content[i] !== "'") {
-        key += content[i];
-        i++;
+        if (content[i] === "\\" && i + 1 < content.length) {
+          key += content[i + 1];
+          i += 2;
+        } else {
+          key += content[i];
+          i++;
+        }
       }
       i++; // skip closing quote
 
       // Skip colon and whitespace
-      while (
-        i < content.length &&
-        (content[i] === ":" || /\s/.test(content[i]))
-      )
-        i++;
+      while (i < content.length && (content[i] === ":" || /\s/.test(content[i]))) i++;
 
       // Parse value
       let value = "";
       if (content[i] === "\\" && content[i + 1] === '"') {
-        // Escaped double-quoted value (\"...\")
-        i += 2; // skip \"
+        // Escaped double-quoted value
+        i += 2;
         while (i < content.length) {
-          if (content[i] === "\\" && content[i + 1] === '"') {
-            i += 2; // skip closing \"
-            break;
-          }
-          // Handle escaped apostrophes within the value
-          if (content[i] === "\\" && content[i + 1] === "'") {
-            value += "'";
+          if (content[i] === "\\" && i + 1 < content.length) {
+            if (content[i + 1] === '"') {
+              i += 2;
+              break;
+            }
+            value += content[i + 1];
             i += 2;
           } else {
             value += content[i];
@@ -390,13 +389,13 @@ const parseStructValue = (structStr: string): any => {
         }
       } else if (content[i] === "'") {
         // Single-quoted value
-        i++; // skip opening quote
+        i++;
         while (i < content.length) {
-          if (content[i] === "\\" && content[i + 1] === "'") {
-            value += "'";
+          if (content[i] === "\\" && i + 1 < content.length) {
+            value += content[i + 1];
             i += 2;
           } else if (content[i] === "'") {
-            i++; // skip closing quote
+            i++;
             break;
           } else {
             value += content[i];
@@ -408,18 +407,14 @@ const parseStructValue = (structStr: string): any => {
       result[key] = value;
 
       // Skip comma and whitespace
-      while (
-        i < content.length &&
-        (content[i] === "," || /\s/.test(content[i]))
-      )
-        i++;
+      while (i < content.length && (content[i] === "," || /\s/.test(content[i]))) i++;
     }
 
     return result;
   } catch (e) {
     console.error("Failed to parse StructValue:", e, structStr);
+    return {};
   }
-  return {};
 };
 
 export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
