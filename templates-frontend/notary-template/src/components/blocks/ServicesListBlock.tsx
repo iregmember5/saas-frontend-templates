@@ -8,7 +8,10 @@ interface ServicesListBlockProps {
 
 // Helper function to parse description into structured bullet points
 const parseDescription = (description: string | undefined): React.ReactNode => {
+  console.log("parseDescription INPUT:", description);
+
   if (!description || !description.trim()) {
+    console.log("parseDescription: Empty description");
     return <p className="text-gray-500 italic">No description available</p>;
   }
 
@@ -21,13 +24,18 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
     .replace(/\r/g, "\n")
     .trim();
 
+  console.log("parseDescription NORMALIZED:", text);
+
   // Split by newlines and filter empty lines
   const lines = text
     .split("\n")
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
+  console.log("parseDescription LINES:", lines);
+
   if (lines.length === 0) {
+    console.log("parseDescription: No lines after split");
     return <p className="text-gray-500 italic">No description available</p>;
   }
 
@@ -76,6 +84,7 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
     }
   }
 
+  console.log("parseDescription OUTPUT: content items =", content.length);
   return content.length > 0 ? (
     <div className="space-y-2">{content}</div>
   ) : (
@@ -93,7 +102,7 @@ const parseServiceValue = (service: any) => {
       const str = service.value;
       const parsed: any = {};
 
-      // Find all key-value pairs in the format 'key': 'value'
+      // Find all key-value pairs in the format 'key': 'value' or 'key': \"value\"
       // This regex handles escaped quotes and newlines inside values
       let i = str.indexOf("{") + 1;
       const end = str.lastIndexOf("}");
@@ -110,7 +119,7 @@ const parseServiceValue = (service: any) => {
           i++;
         if (i >= end) break;
 
-        // Parse key (between quotes)
+        // Parse key (between single quotes)
         if (str[i] !== "'") break;
         i++; // skip opening quote
         let key = "";
@@ -128,52 +137,105 @@ const parseServiceValue = (service: any) => {
         // Skip colon and whitespace
         while (i < end && (str[i] === ":" || str[i] === " ")) i++;
 
-        // Parse value (between quotes)
-        if (str[i] !== "'") break;
-        i++; // skip opening quote
+        // Check if value is wrapped in escaped double quotes \" or single quotes '
+        let valueDelimiter = "'";
+        if (str[i] === "\\" && i + 1 < end && str[i + 1] === '"') {
+          // Value is like \"text\"
+          valueDelimiter = '\\"';
+          i += 2; // skip \"
+        } else if (str[i] === "'") {
+          i++; // skip opening '
+        } else {
+          break;
+        }
+
+        // Parse value
         let value = "";
-        while (i < end && str[i] !== "'") {
-          if (str[i] === "\\" && i + 1 < end) {
-            // Handle escaped characters
-            const nextChar = str[i + 1];
-            if (nextChar === "r" || nextChar === "n") {
-              // Check for \r\n or just \n or \r
-              if (
-                nextChar === "r" &&
-                i + 2 < end &&
-                str[i + 2] === "\\" &&
-                str[i + 3] === "n"
-              ) {
-                value += "\n";
-                i += 4;
-              } else if (nextChar === "n") {
-                value += "\n";
+        if (valueDelimiter === '\\"') {
+          // Looking for closing \"
+          while (i < end) {
+            if (str[i] === "\\" && i + 1 < end) {
+              if (str[i + 1] === '"') {
+                // Found closing \"
+                i += 2;
+                break;
+              } else if (str[i + 1] === "r" || str[i + 1] === "n") {
+                // Handle \r\n or \n
+                if (
+                  str[i + 1] === "r" &&
+                  i + 2 < end &&
+                  str[i + 2] === "\\" &&
+                  i + 3 < end &&
+                  str[i + 3] === "n"
+                ) {
+                  value += "\n";
+                  i += 4;
+                } else if (str[i + 1] === "n") {
+                  value += "\n";
+                  i += 2;
+                } else {
+                  value += "\n";
+                  i += 2;
+                }
+              } else if (str[i + 1] === "'") {
+                value += "'";
+                i += 2;
+              } else if (str[i + 1] === "\\") {
+                value += "\\";
                 i += 2;
               } else {
-                value += "\n";
+                value += str[i + 1];
                 i += 2;
               }
-            } else if (nextChar === "'") {
-              value += "'";
-              i += 2;
-            } else if (nextChar === "\\") {
-              value += "\\";
-              i += 2;
             } else {
-              value += str[i + 1];
-              i += 2;
+              value += str[i];
+              i++;
             }
-          } else {
-            value += str[i];
-            i++;
           }
+        } else {
+          // Looking for closing '
+          while (i < end && str[i] !== "'") {
+            if (str[i] === "\\" && i + 1 < end) {
+              const nextChar = str[i + 1];
+              if (nextChar === "r" || nextChar === "n") {
+                if (
+                  nextChar === "r" &&
+                  i + 2 < end &&
+                  str[i + 2] === "\\" &&
+                  i + 3 < end &&
+                  str[i + 3] === "n"
+                ) {
+                  value += "\n";
+                  i += 4;
+                } else if (nextChar === "n") {
+                  value += "\n";
+                  i += 2;
+                } else {
+                  value += "\n";
+                  i += 2;
+                }
+              } else if (nextChar === "'") {
+                value += "'";
+                i += 2;
+              } else if (nextChar === "\\") {
+                value += "\\";
+                i += 2;
+              } else {
+                value += str[i + 1];
+                i += 2;
+              }
+            } else {
+              value += str[i];
+              i++;
+            }
+          }
+          i++; // skip closing '
         }
-        i++; // skip closing quote
 
         parsed[key] = value.trim();
       }
 
-      console.log("Parsed service data:", parsed);
+      console.log("Parsed service:", parsed);
       return parsed;
     } catch (e) {
       console.error("Failed to parse service:", e, service.value);
@@ -189,7 +251,8 @@ export const ServicesListBlock: React.FC<ServicesListBlockProps> = ({
   const { value } = block;
   const parsedServices = value.services?.map(parseServiceValue) || [];
 
-  console.log("ServicesListBlock - services:", parsedServices);
+  console.log("ServicesListBlock - RAW services:", value.services);
+  console.log("ServicesListBlock - PARSED services:", parsedServices);
 
   return (
     <section id={block.id} className="py-24 bg-white">
