@@ -334,18 +334,62 @@ import { getApiConfig } from '../config/api';
 const parseStructValue = (structStr: string): any => {
   try {
     // Extract content between StructValue({ and })
-    const match = structStr.match(/StructValue\(\{(.*)\}\)/);
-    if (match) {
-      let content = match[1];
-      // Parse key-value pairs
-      const result: any = {};
-      const regex = /'([^']+)':\s*'([^']*)'/g;
-      let m;
-      while ((m = regex.exec(content)) !== null) {
-        result[m[1]] = m[2];
+    const match = structStr.match(/StructValue\(\{(.*)\}\)$/s);
+    if (!match) return {};
+    
+    let content = match[1];
+    const result: any = {};
+    
+    // State machine to parse key-value pairs
+    let i = 0;
+    while (i < content.length) {
+      // Skip whitespace
+      while (i < content.length && /\s/.test(content[i])) i++;
+      if (i >= content.length) break;
+      
+      // Parse key (format: 'key':)
+      if (content[i] !== "'") break;
+      i++; // skip opening quote
+      let key = '';
+      while (i < content.length && content[i] !== "'") {
+        key += content[i];
+        i++;
       }
-      return result;
+      i++; // skip closing quote
+      
+      // Skip colon and whitespace
+      while (i < content.length && (content[i] === ':' || /\s/.test(content[i]))) i++;
+      
+      // Parse value
+      let value = '';
+      if (content[i] === "'") {
+        // Single-quoted value
+        i++; // skip opening quote
+        while (i < content.length && content[i] !== "'") {
+          value += content[i];
+          i++;
+        }
+        i++; // skip closing quote
+      } else if (content[i] === '\\' && content[i + 1] === '"') {
+        // Escaped double-quoted value (\"...\")
+        i += 2; // skip \" 
+        while (i < content.length) {
+          if (content[i] === '\\' && content[i + 1] === '"') {
+            i += 2; // skip closing \"
+            break;
+          }
+          value += content[i];
+          i++;
+        }
+      }
+      
+      result[key] = value;
+      
+      // Skip comma and whitespace
+      while (i < content.length && (content[i] === ',' || /\s/.test(content[i]))) i++;
     }
+    
+    return result;
   } catch (e) {
     console.error('Failed to parse StructValue:', e, structStr);
   }
