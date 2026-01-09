@@ -84,7 +84,7 @@ const parseDescription = (description: string | undefined): React.ReactNode => {
   );
 };
 
-// Parse StructValue string format from API - Complete rewrite
+// Parse StructValue string format from API - Robust parser with debug
 const parseServiceValue = (service: any) => {
   if (
     typeof service.value === "string" &&
@@ -103,98 +103,150 @@ const parseServiceValue = (service: any) => {
       const content = match[1];
       const parsed: any = {};
 
-      // Regex to match key-value pairs, handling both ' and \" delimiters
-      // Matches: 'key': 'value' OR 'key': \"value\"
-      const regex = /'([^']+)':\s*(?:'([^']*)'|\\?"([^\\]*)\\?")/gs;
-      let m;
+      // Debug for Notary Public Services
+      const isNotaryPublic = content.includes("Notary Public Services");
+      if (isNotaryPublic) {
+        console.log("DEBUG - Parsing Notary Public Services");
+        console.log("Content sample:", content.substring(0, 300));
+      }
 
-      while ((m = regex.exec(content)) !== null) {
-        const key = m[1];
-        // Value is in group 2 (single quotes) or group 3 (escaped double quotes)
-        let value = m[2] !== undefined ? m[2] : m[3] || "";
+      let i = 0;
+      while (i < content.length) {
+        // Skip whitespace and commas
+        while (i < content.length && /[\s,]/.test(content[i])) i++;
+        if (i >= content.length) break;
 
-        // Clean up escape sequences
+        // Parse key - must start with '
+        if (content[i] !== "'") {
+          i++; // skip and continue
+          continue;
+        }
+        i++; // skip opening '
+
+        let key = "";
+        while (i < content.length && content[i] !== "'") {
+          if (content[i] === "\\" && i + 1 < content.length) {
+            key += content[i + 1];
+            i += 2;
+          } else {
+            key += content[i];
+            i++;
+          }
+        }
+
+        if (i >= content.length) break;
+        i++; // skip closing '
+
+        // Skip : and whitespace
+        while (i < content.length && /[\s:]/.test(content[i])) i++;
+
+        if (i >= content.length) {
+          parsed[key] = "";
+          break;
+        }
+
+        // Debug for short_description key
+        if (isNotaryPublic && key === "short_description") {
+          console.log("DEBUG - Found short_description at position", i);
+          console.log("Next 50 chars:", content.substring(i, i + 50));
+        }
+
+        // Determine value type and parse accordingly
+        let value = "";
+
+        // Check for escaped double quote (backslash followed by double quote)
+        if (
+          content[i] === "\\" &&
+          i + 1 < content.length &&
+          content[i + 1] === '"'
+        ) {
+          // Escaped double quote: \"...\"
+          if (isNotaryPublic && key === "short_description") {
+            console.log("DEBUG - Using escaped double quote parser");
+          }
+          i += 2; // skip \"
+
+          while (i < content.length) {
+            if (content[i] === "\\" && i + 1 < content.length) {
+              const next = content[i + 1];
+              if (next === '"') {
+                // Found closing \"
+                i += 2;
+                break;
+              } else {
+                // Preserve other escape sequences
+                value += content[i] + content[i + 1];
+                i += 2;
+              }
+            } else {
+              value += content[i];
+              i++;
+            }
+          }
+
+          if (isNotaryPublic && key === "short_description") {
+            console.log("DEBUG - Parsed value length:", value.length);
+            console.log("DEBUG - First 100 chars:", value.substring(0, 100));
+          }
+        } else if (content[i] === "'") {
+          // Single quote: '...'
+          i++; // skip opening '
+
+          while (i < content.length) {
+            if (content[i] === "\\" && i + 1 < content.length) {
+              const next = content[i + 1];
+              if (next === "'") {
+                // Escaped quote within
+                value += "'";
+                i += 2;
+              } else {
+                // Preserve other escape sequences
+                value += content[i] + content[i + 1];
+                i += 2;
+              }
+            } else if (content[i] === "'") {
+              // Found closing '
+              i++;
+              break;
+            } else {
+              value += content[i];
+              i++;
+            }
+          }
+        } else {
+          // Empty or unexpected format
+          if (isNotaryPublic && key === "short_description") {
+            console.log(
+              "DEBUG - Unexpected format, char code:",
+              content.charCodeAt(i)
+            );
+          }
+          parsed[key] = "";
+          continue;
+        }
+
+        // Post-process escape sequences
         value = value
-          .replace(/\\r\\n/g, "\n") // \r\n -> newline
-          .replace(/\\n/g, "\n") // \n -> newline
-          .replace(/\\r/g, "\n") // \r -> newline
-          .replace(/\\'/g, "'") // \' -> '
-          .replace(/\\"/g, '"') // \" -> "
-          .replace(/\\\\/g, "\\") // \\ -> \
-          .trim();
+          .replace(/\\r\\n/g, "\n")
+          .replace(/\\n/g, "\n")
+          .replace(/\\r/g, "\n")
+          .replace(/\\'/g, "'")
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\");
 
         parsed[key] = value;
       }
 
-      // If regex didn't capture anything, try manual parsing
-      if (Object.keys(parsed).length === 0) {
-        console.warn("Regex parsing failed, attempting manual parse");
-
-        let i = 0;
-        while (i < content.length) {
-          // Skip whitespace and commas
-          while (i < content.length && /[\s,]/.test(content[i])) i++;
-          if (i >= content.length) break;
-
-          // Parse key
-          if (content[i] !== "'") break;
-          i++;
-          let key = "";
-          while (i < content.length && content[i] !== "'") {
-            key += content[i];
-            i++;
-          }
-          i++; // skip closing '
-
-          // Skip : and whitespace
-          while (i < content.length && /[\s:]/.test(content[i])) i++;
-
-          // Check value delimiter
-          let value = "";
-          if (content[i] === "\\" && content[i + 1] === '"') {
-            // Escaped double quote \"...\"
-            i += 2;
-            while (i < content.length) {
-              if (content[i] === "\\" && content[i + 1] === '"') {
-                i += 2;
-                break;
-              }
-              value += content[i];
-              i++;
-            }
-          } else if (content[i] === "'") {
-            // Single quote '...'
-            i++;
-            while (i < content.length && content[i] !== "'") {
-              value += content[i];
-              i++;
-            }
-            i++;
-          }
-
-          // Clean value
-          value = value
-            .replace(/\\r\\n/g, "\n")
-            .replace(/\\n/g, "\n")
-            .replace(/\\r/g, "\n")
-            .replace(/\\'/g, "'")
-            .replace(/\\"/g, '"')
-            .replace(/\\\\/g, "\\")
-            .trim();
-
-          parsed[key] = value;
-        }
+      if (parsed.service_name) {
+        console.log("Parsed service:", parsed);
       }
-
-      console.log(
-        "Parsed service:",
-        service.value.substring(0, 100) + "...",
-        "->",
-        parsed
-      );
       return parsed;
     } catch (e) {
-      console.error("Failed to parse service:", e, service.value);
+      console.error(
+        "Failed to parse service:",
+        e,
+        service.value?.substring?.(0, 200)
+      );
       return service;
     }
   }
