@@ -103,95 +103,102 @@ const parseServiceValue = (service: any) => {
       const content = match[1];
       const parsed: any = {};
 
-      // Regex to match key-value pairs, handling both ' and \" delimiters
-      // Matches: 'key': 'value' OR 'key': \"value\"
-      const regex = /'([^']+)':\s*(?:'([^']*)'|\\?"([^\\]*)\\?")/gs;
-      let m;
+      // Manual parsing that handles escaped quotes properly
+      let i = 0;
+      while (i < content.length) {
+        // Skip whitespace and commas
+        while (i < content.length && /[\s,]/.test(content[i])) i++;
+        if (i >= content.length) break;
 
-      while ((m = regex.exec(content)) !== null) {
-        const key = m[1];
-        // Value is in group 2 (single quotes) or group 3 (escaped double quotes)
-        let value = m[2] !== undefined ? m[2] : m[3] || "";
+        // Parse key
+        if (content[i] !== "'") break;
+        i++;
+        let key = "";
+        while (i < content.length && content[i] !== "'") {
+          if (content[i] === "\\" && i + 1 < content.length) {
+            key += content[i + 1];
+            i += 2;
+          } else {
+            key += content[i];
+            i++;
+          }
+        }
+        i++; // skip closing '
 
-        // Clean up escape sequences
+        // Skip : and whitespace
+        while (i < content.length && /[\s:]/.test(content[i])) i++;
+
+        // Check value delimiter
+        let value = "";
+        if (content[i] === "\\" && content[i + 1] === '"') {
+          // Escaped double quote \"...\"
+          i += 2;
+          while (i < content.length) {
+            if (content[i] === "\\" && i + 1 < content.length) {
+              if (content[i + 1] === '"') {
+                i += 2;
+                break;
+              }
+              // Handle other escape sequences
+              if (
+                content[i + 1] === "r" ||
+                content[i + 1] === "n" ||
+                content[i + 1] === "\\"
+              ) {
+                value += content[i];
+                value += content[i + 1];
+                i += 2;
+              } else {
+                value += content[i + 1];
+                i += 2;
+              }
+            } else {
+              value += content[i];
+              i++;
+            }
+          }
+        } else if (content[i] === "'") {
+          // Single quote '...'
+          i++;
+          while (i < content.length) {
+            if (content[i] === "\\" && i + 1 < content.length) {
+              if (content[i + 1] === "'") {
+                value += "'";
+                i += 2;
+              } else if (
+                content[i + 1] === "r" ||
+                content[i + 1] === "n" ||
+                content[i + 1] === "\\"
+              ) {
+                value += content[i];
+                value += content[i + 1];
+                i += 2;
+              } else {
+                value += content[i + 1];
+                i += 2;
+              }
+            } else if (content[i] === "'") {
+              i++;
+              break;
+            } else {
+              value += content[i];
+              i++;
+            }
+          }
+        }
+
+        // Clean value - normalize line breaks
         value = value
-          .replace(/\\r\\n/g, "\n") // \r\n -> newline
-          .replace(/\\n/g, "\n") // \n -> newline
-          .replace(/\\r/g, "\n") // \r -> newline
-          .replace(/\\'/g, "'") // \' -> '
-          .replace(/\\"/g, '"') // \" -> "
-          .replace(/\\\\/g, "\\") // \\ -> \
-          .trim();
+          .replace(/\\r\\n/g, "\n")
+          .replace(/\\n/g, "\n")
+          .replace(/\\r/g, "\n")
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\");
 
         parsed[key] = value;
       }
 
-      // If regex didn't capture anything, try manual parsing
-      if (Object.keys(parsed).length === 0) {
-        console.warn("Regex parsing failed, attempting manual parse");
-
-        let i = 0;
-        while (i < content.length) {
-          // Skip whitespace and commas
-          while (i < content.length && /[\s,]/.test(content[i])) i++;
-          if (i >= content.length) break;
-
-          // Parse key
-          if (content[i] !== "'") break;
-          i++;
-          let key = "";
-          while (i < content.length && content[i] !== "'") {
-            key += content[i];
-            i++;
-          }
-          i++; // skip closing '
-
-          // Skip : and whitespace
-          while (i < content.length && /[\s:]/.test(content[i])) i++;
-
-          // Check value delimiter
-          let value = "";
-          if (content[i] === "\\" && content[i + 1] === '"') {
-            // Escaped double quote \"...\"
-            i += 2;
-            while (i < content.length) {
-              if (content[i] === "\\" && content[i + 1] === '"') {
-                i += 2;
-                break;
-              }
-              value += content[i];
-              i++;
-            }
-          } else if (content[i] === "'") {
-            // Single quote '...'
-            i++;
-            while (i < content.length && content[i] !== "'") {
-              value += content[i];
-              i++;
-            }
-            i++;
-          }
-
-          // Clean value
-          value = value
-            .replace(/\\r\\n/g, "\n")
-            .replace(/\\n/g, "\n")
-            .replace(/\\r/g, "\n")
-            .replace(/\\'/g, "'")
-            .replace(/\\"/g, '"')
-            .replace(/\\\\/g, "\\")
-            .trim();
-
-          parsed[key] = value;
-        }
-      }
-
-      console.log(
-        "Parsed service:",
-        service.value.substring(0, 100) + "...",
-        "->",
-        parsed
-      );
+      console.log("Parsed service:", parsed);
       return parsed;
     } catch (e) {
       console.error("Failed to parse service:", e, service.value);
