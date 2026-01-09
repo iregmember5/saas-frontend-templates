@@ -87,7 +87,7 @@ export interface ServiceAreaBlock {
 }
 
 // Services List Block
-interface ServiceItem {
+export interface ServiceItem {
   service_name: string;
   description: string; // Long description
   short_description?: string; // Short description (preferred)
