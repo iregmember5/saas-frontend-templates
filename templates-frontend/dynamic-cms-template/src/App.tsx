@@ -6,24 +6,12 @@ import { BlogPage } from "./components/blogs/BlogPage";
 import DebugFeaturesAPI from "./pages/DebugFeaturesApi";
 import DebugLandingAPI from "./pages/DebugLandingApi";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { loadTenantData, applyTenantStyles } from "./tenantLoader";
 
 function App() {
-  const [tenant, setTenant] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<{
     type: "landing" | "features" | "blog" | "debug-features" | "debug-landing";
     slug?: string;
   }>({ type: "landing" });
-
-  useEffect(() => {
-    loadTenantData()
-      .then((data) => {
-        setTenant(data);
-        applyTenantStyles(data);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   useEffect(() => {
     const checkRoute = () => {
@@ -91,9 +79,6 @@ function App() {
       window.removeEventListener("popstate", checkRoute);
     };
   }, []);
-
-  if (loading) return <div>Loading...</div>;
-  if (!tenant) return <div>Tenant not found</div>;
 
   if (currentView.type === "blog") {
     return (
