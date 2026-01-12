@@ -1,23 +1,18 @@
 import type { FeaturesPageData } from "../../../types/features-page";
-
-const isDevelopment = import.meta.env.DEV;
-const frontendUrl = isDevelopment
-  ? "http://localhost:5173"
-  : "http://w9chaser.com";
-
-const baseApiUrl = isDevelopment
-  ? "/blogs/api/v2"
-  : "https://esign-admin.signmary.com/blogs/api/v2";
+import { getApiConfig } from "../../../config/api";
 
 export const fetchAllFeaturesPages = async (): Promise<FeaturesPageData[]> => {
   try {
-    const apiUrl = `${baseApiUrl}/features-pages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/features-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 

@@ -138,28 +138,23 @@ export interface BlogPostApiResponse {
   results: BlogPost[];
 }
 
+import { getApiConfig } from '../config/api';
+
 // API Service Functions
-// ===== API Configuration =====
-const isDevelopment = import.meta.env.DEV;
-const frontendUrl = isDevelopment
-  ? "http://localhost:5173"
-  : "https://mypowerly.vercel.app";
-
-const baseApiUrl = isDevelopment
-  ? "/blogs/api/v2"
-  : "https://esign-admin.signmary.com/blogs/api/v2";
-
 // ===== API Service Functions =====
 
 export const fetchBlogIndexPage = async (): Promise<BlogPageData> => {
   try {
-    const apiUrl = `${baseApiUrl}/blog-pages/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/blog-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -185,13 +180,16 @@ export const fetchBlogIndexPage = async (): Promise<BlogPageData> => {
 
 export const fetchAllBlogPosts = async (): Promise<BlogPost[]> => {
   try {
-    const apiUrl = `${baseApiUrl}/blog-cards/`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/blog-cards/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -220,17 +218,20 @@ export const fetchBlogPostBySlug = async (
   slug: string
 ): Promise<BlogPostPageData> => {
   try {
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
     console.log(`🔍 Fetching blog post with slug: ${slug}`);
 
     // Try to fetch by slug using the by_slug action
-    const apiUrl = `${baseApiUrl}/blog-cards/${slug}/by_slug/`;
+    const apiUrl = `${cmsUrl}/blog-cards/${slug}/by_slug/`;
     console.log(`Trying API endpoint: ${apiUrl}`);
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
@@ -274,13 +275,16 @@ export const fetchBlogPostsByCategory = async (
   categorySlug: string
 ): Promise<BlogPost[]> => {
   try {
-    const apiUrl = `${baseApiUrl}/blog-cards/?category=${categorySlug}`;
+    const { cmsUrl, subdomain, tenantId } = getApiConfig();
+    const apiUrl = `${cmsUrl}/blog-cards/?category=${categorySlug}`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": frontendUrl,
+        "X-Frontend-Url": window.location.origin,
+        "X-Tenant-Id": tenantId,
+        "X-Subdomain": subdomain,
       },
     });
 
