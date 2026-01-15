@@ -6,9 +6,10 @@ import EasyIcon from "./IconRenderer";
 interface HeaderProps {
   data: LandingPageData;
   onShowLogin?: () => void;
+  onShowForm?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ data, onShowLogin }) => {
+const Header: React.FC<HeaderProps> = ({ data, onShowLogin, onShowForm }) => {
   const {
     header_title,
     header_subtitle,
@@ -23,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin }) => {
   const primaryColor = "var(--color-primary)";
 
   const [isBlinking, setIsBlinking] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
@@ -45,6 +47,13 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin }) => {
     ? `${backendBaseUrl}${header_section_image.url}`
     : null;
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Start blinking after component mounts
   useEffect(() => {
     const blinkTimer = setTimeout(() => {
@@ -55,19 +64,15 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin }) => {
   }, []);
 
   const handleGetStartedClick = () => {
-    // Stop blinking when button is clicked
     setIsBlinking(false);
-
-    // Trigger the original onShowLogin if provided
-    if (onShowLogin) {
-      onShowLogin();
-    }
+    if (onShowLogin) onShowLogin();
+    if (onShowForm) onShowForm();
   };
 
   return (
     <header
       ref={ref}
-      className="relative top-7 flex items-center justify-center overflow-hidden min-h-screen bg-theme-background"
+      className="relative top-7 flex items-center justify-center overflow-hidden min-h-[85vh] sm:min-h-screen bg-theme-background"
       style={{
         backgroundImage: backgroundImageUrl
           ? `url(${backgroundImageUrl})`
@@ -84,8 +89,8 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin }) => {
 
       {/* Content Container */}
       <motion.div
-        className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 max-w-7xl"
-        style={{ y, opacity }}
+        className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 lg:py-20 max-w-7xl"
+        style={isMobile ? {} : { y, opacity }}
       >
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-10 lg:gap-12">
           {/* Text Content - Left Side */}
@@ -246,7 +251,10 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin }) => {
                       </motion.a>
                     ) : (
                       <motion.button
-                        onClick={onShowLogin}
+                        onClick={() => {
+                          if (onShowLogin) onShowLogin();
+                          if (onShowForm) onShowForm();
+                        }}
                         className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold cursor-pointer inline-flex items-center justify-center gap-2 text-sm sm:text-base border-2 border-theme-neutral/30 text-theme-neutral hover:border-theme-neutral/50 hover:text-theme-text transition-all duration-200"
                       >
                         {header_cta_secondary}

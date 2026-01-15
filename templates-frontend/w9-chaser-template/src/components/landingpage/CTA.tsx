@@ -4,9 +4,10 @@ import EasyIcon from "./IconRenderer";
 
 interface CTAProps {
   data: LandingPageData;
+  onShowForm?: () => void;
 }
 
-const CTA: React.FC<CTAProps> = ({ data }) => {
+const CTA: React.FC<CTAProps> = ({ data, onShowForm }) => {
   const {
     cta_head,
     cta_introduction,
@@ -94,7 +95,13 @@ const CTA: React.FC<CTAProps> = ({ data }) => {
             {cta_secondary_text && (
               <a
                 href={cta_secondary_url || "#"}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base border-2 text-white transition-all duration-300 hover:scale-105 backdrop-blur-sm border-white/40 hover:bg-white/10"
+                onClick={(e) => {
+                  if (!cta_secondary_url || cta_secondary_url === "#") {
+                    e.preventDefault();
+                    if (onShowForm) onShowForm();
+                  }
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base border-2 text-white transition-all duration-300 hover:scale-105 backdrop-blur-sm border-white/40 hover:bg-white/10 cursor-pointer"
               >
                 <span>{cta_secondary_text}</span>
               </a>
