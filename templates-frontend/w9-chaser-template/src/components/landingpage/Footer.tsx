@@ -69,6 +69,15 @@ function Footer({ data }: FooterProps) {
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-br from-theme-background via-theme-background to-theme-neutral/5 border-t border-theme-neutral/20">
+      {/* Background Image */}
+      {footerConfig.background_image && (
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-10"
+          style={{
+            backgroundImage: `url(${getFullImageUrl(footerConfig.background_image.url)})`,
+          }}
+        />
+      )}
       {/* Subtle Pattern Background */}
       <div
         className="absolute inset-0 opacity-5"
