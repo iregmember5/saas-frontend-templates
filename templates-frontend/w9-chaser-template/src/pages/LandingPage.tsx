@@ -16,7 +16,6 @@ import Footer from "../components/landingpage/Footer";
 import ProblemSolution from "../components/landingpage/ProblemSolution";
 import HowItWorks from "../components/landingpage/HowItWorks";
 import Pricing from "../components/landingpage/Pricing";
-import { MessageCircle, X } from "lucide-react";
 
 interface LandingPageProps {
   onShowLogin?: () => void;
@@ -27,7 +26,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [themeColors, setThemeColors] = useState<any>(null);
-  const [chatOpen, setChatOpen] = useState(false);
 
   // Scroll animation observer - triggers on both scroll down and up
   useEffect(() => {
@@ -289,22 +287,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
 
   return (
     <div className="landing-page">
-      {/* Chat Widget */}
       {data?.chat_widget_iframe && (
-        <>
-          <button
-            onClick={() => setChatOpen(!chatOpen)}
-            className="fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-full gradient-theme-primary text-white shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center"
-          >
-            {chatOpen ? <X size={24} /> : <MessageCircle size={24} />}
-          </button>
-          {chatOpen && (
-            <div
-              className="fixed bottom-24 right-6 z-[9998] w-[400px] h-[600px] rounded-2xl shadow-2xl overflow-hidden"
-              dangerouslySetInnerHTML={{ __html: data.chat_widget_iframe }}
-            />
-          )}
-        </>
+        <div dangerouslySetInnerHTML={{ __html: data.chat_widget_iframe }} />
       )}
 
       {/* Global Animation Styles */}
