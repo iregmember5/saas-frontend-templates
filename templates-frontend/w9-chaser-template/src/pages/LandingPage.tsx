@@ -73,9 +73,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
 
         // Load chat widget
         if (pageData.chat_widget_iframe) {
-          const script = document.createElement('div');
-          script.innerHTML = pageData.chat_widget_iframe;
-          document.body.appendChild(script);
+          const temp = document.createElement('div');
+          temp.innerHTML = pageData.chat_widget_iframe;
+          Array.from(temp.querySelectorAll('script')).forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => 
+              newScript.setAttribute(attr.name, attr.value)
+            );
+            newScript.textContent = oldScript.textContent;
+            document.body.appendChild(newScript);
+          });
         }
 
         // Set dynamic meta tags
