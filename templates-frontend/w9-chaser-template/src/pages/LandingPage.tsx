@@ -134,12 +134,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
     // Map section keys to their components with appropriate animations
     const sectionComponents: Record<string, React.ReactElement | null> = {
       header: (
-        <div key={`header-${index}`} className="scroll-fade-up animate-in">
+        <div key={`header-${index}`} id="home" className="scroll-fade-up animate-in">
           <Header data={data!} onShowLogin={onShowLogin} />
         </div>
       ),
       features: (
-        <div key={`features-${index}`} className="scroll-fade-up">
+        <div key={`features-${index}`} id="features" className="scroll-fade-up">
           <Features data={data!} />
         </div>
       ),
@@ -164,7 +164,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
         </div>
       ),
       pricing: (
-        <div key={`pricing-${index}`} className="scroll-fade-up">
+        <div key={`pricing-${index}`} id="pricing" className="scroll-fade-up">
           <Pricing data={data!} />
         </div>
       ),
@@ -217,7 +217,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           </div>
         ) : null,
       footer: (
-        <div key={`footer-${index}`} className="scroll-fade-in">
+        <div key={`footer-${index}`} id="contact" className="scroll-fade-in">
           <Footer data={data!} />
         </div>
       ),
@@ -464,12 +464,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
         // Fallback: If no section_order, render in default order
         <>
           {/* Header Section */}
-          <div className="scroll-fade-up animate-in">
+          <div id="home" className="scroll-fade-up animate-in">
             <Header data={data} onShowLogin={onShowLogin} />
           </div>
 
           {/* Features Section */}
-          <div className="scroll-fade-up">
+          <div id="features" className="scroll-fade-up">
             <Features data={data} />
           </div>
 
@@ -496,7 +496,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           </div>
 
           {/* Pricing Section */}
-          <div className="scroll-fade-up">
+          <div id="pricing" className="scroll-fade-up">
             <Pricing data={data} />
           </div>
 
@@ -548,7 +548,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           )}
 
           {/* Footer */}
-          <div className="scroll-fade-in">
+          <div id="contact" className="scroll-fade-in">
             <Footer data={data} />
           </div>
         </>

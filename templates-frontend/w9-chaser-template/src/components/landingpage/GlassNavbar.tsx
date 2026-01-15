@@ -221,7 +221,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                 .sort((a, b) => a.order - b.order)
                 .map((link) => (
                   <div key={link.id} className="relative">
-                    {isFeatureDropdown(link) ? (
+                    {isFeatureDropdown(link) && featuresPages.length > 0 ? (
                       <div
                         className="relative h-full"
                         onMouseEnter={() => setActiveDropdown(link.id)}
@@ -244,8 +244,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
 
                         {/* Features Pages Dropdown - Connected to button with padding */}
 
-                        {activeDropdown === link.id &&
-                          featuresPages.length > 0 && (
+                        {activeDropdown === link.id && (
                             <div
                               className="absolute top-full left-1/2 mt-2 w-[650px] bg-white backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl z-50"
                               style={{
@@ -300,6 +299,14 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                             </div>
                           )}
                       </div>
+                    ) : isFeatureDropdown(link) ? (
+                      <a
+                        href="#features"
+                        className="text-sm font-semibold transition-all duration-300 hover:scale-105 relative group py-2 inline-block text-theme-text"
+                      >
+                        {link.title}
+                        <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
+                      </a>
                     ) : hasDropdownChildren(link) ? (
                       // Regular dropdown
                       <div
@@ -404,7 +411,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
               .sort((a, b) => a.order - b.order)
               .map((link) => (
                 <div key={link.id}>
-                  {isFeatureDropdown(link) ? (
+                  {isFeatureDropdown(link) && featuresPages.length > 0 ? (
                     <div>
                       <button
                         onClick={() =>
@@ -422,8 +429,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                           }`}
                         />
                       </button>
-                      {activeDropdown === link.id &&
-                        featuresPages.length > 0 && (
+                      {activeDropdown === link.id && (
                           <div className="ml-4 mt-2 space-y-1 max-h-64 overflow-y-auto">
                             {featuresPages.map((page) => (
                               <a
@@ -449,6 +455,14 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                           </div>
                         )}
                     </div>
+                  ) : isFeatureDropdown(link) ? (
+                    <a
+                      href="#features"
+                      className="block text-base font-medium py-2 px-2 rounded transition hover:text-blue-600 text-theme-text"
+                      onClick={() => setOpen(false)}
+                    >
+                      {link.title}
+                    </a>
                   ) : hasDropdownChildren(link) ? (
                     <div>
                       <button
