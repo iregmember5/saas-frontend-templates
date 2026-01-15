@@ -127,6 +127,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
   const navbarStyle = headerConfig?.navbar_style || "default";
   const stickyNavbar = headerConfig?.sticky_navbar !== false;
   const transparentOnHome = headerConfig?.transparent_on_home || false;
+  const backgroundImage = headerConfig?.background_image;
 
   function getNavigationItemUrl(item: any): string {
     if (item.link_type === "page" && !item.url) {
@@ -173,9 +174,18 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           : transparentOnHome
           ? "bg-transparent"
           : "backdrop-blur-md bg-theme-background/30 border-b border-theme-primary/20"
-      }`}
+      } relative overflow-hidden`}
+      style={backgroundImage ? {
+        backgroundImage: `url(${getFullImageUrl(backgroundImage.url)})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      } : undefined}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {backgroundImage && (
+        <div className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm" />
+      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div
           className={`flex items-center ${getNavbarStyleClass()} py-3 ${
             !transparentOnHome && !scrolled && "border-b border-white/10"

@@ -297,6 +297,7 @@ export interface LandingPageData {
   how_it_works_section?: HowItWorksSection;
   pricing_section?: PricingSection;
   section_order?: string[];
+  chat_widget_iframe?: string;
 }
 
 // ===== NEW: FeaturesPage Interface =====

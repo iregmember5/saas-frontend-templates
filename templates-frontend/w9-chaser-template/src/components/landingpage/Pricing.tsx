@@ -1,52 +1,61 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import type { LandingPageData } from "../../types/landing";
 
-interface PricingProps {
-  data: LandingPageData;
-}
+export default function Pricing({ data }: { data: LandingPageData }) {
+  const widgetCode = data.pricing_section?.widget_code;
+  const slug =
+    widgetCode?.match(/slug=([^&'"]+)/)?.[1] || "untitled-pricing-table-82";
+  const containerId = `widget-${slug}`;
 
-const Pricing: React.FC<PricingProps> = ({ data }) => {
-  const section = data.pricing_section;
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  if (!section || !section.heading) {
-    return null;
-  }
+  useEffect(() => {
+    // Create the container with the exact ID the loader expects
+    if (containerRef.current) {
+      containerRef.current.id = containerId;
+      containerRef.current.innerHTML = `
+        <div style="
+          padding: 60px 20px;
+          text-align: center;
+          color: #666;
+          font-family: system-ui, -apple-system, sans-serif;
+          font-size: 18px;
+        ">
+          Loading pricing widget...
+        </div>
+      `;
+    }
+
+    // Create and inject the loader script
+    const script = document.createElement("script");
+    script.src = `https://pricing-bundler-green.vercel.app/widget-loader.js?slug=${slug}`;
+    script.async = true;
+
+    // Important: Append script to the container or after it so currentScript works better
+    containerRef.current?.appendChild(script);
+
+    // Cleanup
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, [slug]);
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-theme-neutral/5">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-theme-text mb-3 sm:mb-4">
-            {section.heading}
-          </h2>
-          {section.description && (
-            <p className="text-base sm:text-lg md:text-xl text-theme-neutral max-w-3xl mx-auto">
-              {section.description}
-            </p>
-          )}
-        </div>
-
-        {section.widget_code ? (
-          <div 
-            className="max-w-4xl mx-auto overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: section.widget_code }}
-          />
-        ) : (
-          <div className="text-center">
-            <p className="text-sm sm:text-base text-theme-neutral mb-6 sm:mb-8">Pricing information coming soon...</p>
-            {section.show_cta && section.cta && (
-              <a
-                href={section.cta.url || "#"}
-                className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-theme-primary text-white rounded-lg hover:bg-theme-secondary transition-colors font-semibold text-sm sm:text-base"
-              >
-                {section.cta.text}
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
+    <div id="pricing" className="w-full mx-auto max-w-6xl">
+      {data.pricing_section?.heading && (
+        <h2 className="text-3xl font-bold text-center mb-4">
+          {data.pricing_section.heading}
+        </h2>
+      )}
+      {data.pricing_section?.description && (
+        <p className="text-center text-gray-600 mb-8">
+          {data.pricing_section.description}
+        </p>
+      )}
+      {/* This div will get the correct ID and the widget will render inside it */}
+      <div ref={containerRef} />
+    </div>
   );
-};
-
-export default Pricing;
+}
