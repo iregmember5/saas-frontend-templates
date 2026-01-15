@@ -71,6 +71,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
         
         setData(pageData);
 
+        // Load chat widget
+        if (pageData.chat_widget_iframe) {
+          const script = document.createElement('div');
+          script.innerHTML = pageData.chat_widget_iframe;
+          document.body.appendChild(script);
+        }
+
         // Set dynamic meta tags
         if (pageData.meta_title || pageData.title) {
           document.title = pageData.meta_title || pageData.title;
@@ -287,10 +294,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
 
   return (
     <div className="landing-page">
-      {data?.chat_widget_iframe && (
-        <div dangerouslySetInnerHTML={{ __html: data.chat_widget_iframe }} />
-      )}
-
       {/* Global Animation Styles */}
       <style>{`
         @keyframes fadeUp {
