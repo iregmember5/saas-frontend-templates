@@ -354,10 +354,9 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                           <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
                         </button>
 
-                        {activeDropdown === link.id &&
-                          link.children &&
-                          link.children.length > 0 && (
-                            <div className="absolute top-full left-0 mt-2 w-56 backdrop-blur-xl bg-white border border-gray-200 rounded-xl shadow-2xl py-2 z-[100]">
+                        {activeDropdown === link.id && link.children && link.children.length > 0 && (
+                          <div className="absolute top-full left-0 pt-2">
+                            <div className="w-56 bg-white border border-gray-200 rounded-xl shadow-2xl py-2">
                               {link.children.map((child) => (
                                 <a
                                   key={child.id}
@@ -369,7 +368,8 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                                 </a>
                               ))}
                             </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       // Regular link
