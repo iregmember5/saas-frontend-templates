@@ -204,12 +204,16 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           ? "bg-transparent"
           : "backdrop-blur-md bg-theme-background/30 border-b border-theme-primary/20"
       } relative overflow-hidden`}
-      style={backgroundImage ? {
-        backgroundImage: `url(${getFullImageUrl(backgroundImage.url)})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      } : undefined}
+      style={
+        backgroundImage
+          ? {
+              backgroundImage: `url(${getFullImageUrl(backgroundImage.url)})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }
+          : undefined
+      }
     >
       {backgroundImage && (
         <div className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm" />
@@ -274,59 +278,59 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                         {/* Features Pages Dropdown - Connected to button with padding */}
 
                         {activeDropdown === link.id && (
+                          <div
+                            className="absolute top-full left-1/2 mt-2 w-[650px] bg-white backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl z-50"
+                            style={{
+                              transform: "translateX(-50%)",
+                              opacity: 1,
+                              animation:
+                                "dropdownFadeIn 0.2s ease-out forwards",
+                            }}
+                          >
+                            {/* Drop shadow hover area */}
                             <div
-                              className="absolute top-full left-1/2 mt-2 w-[650px] bg-white backdrop-blur-xl border border-gray-200 rounded-2xl shadow-2xl z-50"
-                              style={{
-                                transform: "translateX(-50%)",
-                                opacity: 1,
-                                animation:
-                                  "dropdownFadeIn 0.2s ease-out forwards",
-                              }}
-                            >
-                              {/* Drop shadow hover area */}
-                              <div
-                                className="absolute -top-2 left-0 right-0 h-2"
-                                onMouseEnter={() => setActiveDropdown(link.id)}
-                              />
+                              className="absolute -top-2 left-0 right-0 h-2"
+                              onMouseEnter={() => setActiveDropdown(link.id)}
+                            />
 
-                              {/* Dropdown Header */}
-                              <div className="px-6 py-4 border-b border-gray-100">
-                                <h3 className="font-bold text-lg text-theme-primary">
-                                  Features
-                                </h3>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  Everything you need to grow your business
-                                </p>
-                              </div>
-
-                              {/* Features Grid */}
-                              <div className="p-6 grid grid-cols-3 gap-5">
-                                {featuresPages.map((page, index) => (
-                                  <a
-                                    key={page.id}
-                                    href={`/#features/${page.slug}`}
-                                    className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-100 transition-all group"
-                                    onClick={() => setActiveDropdown(null)}
-                                  >
-                                    <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-xl">
-                                      {index === 0 && "📧"}
-                                      {index === 1 && "👥"}
-                                      {index === 2 && "📊"}
-                                      {index === 3 && "📋"}
-                                      {index === 4 && "💬"}
-                                      {index === 5 && "🔒"}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-medium text-sm leading-tight group-hover:text-blue-600 text-theme-text">
-                                        {page.title}
-                                      </h4>
-                                    </div>
-                                  </a>
-                                ))}
-                              </div>
+                            {/* Dropdown Header */}
+                            <div className="px-6 py-4 border-b border-gray-100">
+                              <h3 className="font-bold text-lg text-theme-primary">
+                                Features
+                              </h3>
+                              <p className="text-sm text-gray-600 mt-1">
+                                Everything you need to grow your business
+                              </p>
                             </div>
-                          )}
+
+                            {/* Features Grid */}
+                            <div className="p-6 grid grid-cols-3 gap-5">
+                              {featuresPages.map((page, index) => (
+                                <a
+                                  key={page.id}
+                                  href={`/#features/${page.slug}`}
+                                  className="flex items-start gap-3 p-2 rounded-xl hover:bg-gray-100 transition-all group"
+                                  onClick={() => setActiveDropdown(null)}
+                                >
+                                  <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-xl">
+                                    {index === 0 && "📧"}
+                                    {index === 1 && "👥"}
+                                    {index === 2 && "📊"}
+                                    {index === 3 && "📋"}
+                                    {index === 4 && "💬"}
+                                    {index === 5 && "🔒"}
+                                  </div>
+
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-medium text-sm leading-tight group-hover:text-blue-600 text-theme-text">
+                                      {page.title}
+                                    </h4>
+                                  </div>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : isFeatureDropdown(link) ? (
                       <a
@@ -339,37 +343,46 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                     ) : hasDropdownChildren(link) ? (
                       // Regular dropdown
                       <div
-                        className="relative"
+                        className="relative h-full"
                         onMouseEnter={() => setActiveDropdown(link.id)}
                         onMouseLeave={() => setActiveDropdown(null)}
                       >
-                        <button className="flex items-center gap-1 text-sm font-semibold transition-all duration-300 hover:scale-105 relative group py-2 text-theme-text">
-                          {link.title}
-                          <ChevronDown
-                            size={16}
-                            className={`transition-transform duration-300 ${
-                              activeDropdown === link.id ? "rotate-180" : ""
-                            }`}
-                          />
-                          <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
-                        </button>
+                        <div className="h-full flex items-center">
+                          <button className="flex items-center gap-1 text-sm font-semibold transition-all duration-300 hover:scale-105 relative group py-2 text-theme-text">
+                            {link.title}
+                            <ChevronDown
+                              size={16}
+                              className={`transition-transform duration-300 ${
+                                activeDropdown === link.id ? "rotate-180" : ""
+                              }`}
+                            />
+                            <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
+                          </button>
+                        </div>
 
-                        {activeDropdown === link.id && link.children && link.children.length > 0 && (
-                          <div className="absolute top-full left-0 pt-2">
-                            <div className="w-56 bg-white border border-gray-200 rounded-xl shadow-2xl py-2">
-                              {link.children.map((child) => (
-                                <a
-                                  key={child.id}
-                                  href={getNavigationItemUrl(child)}
-                                  className="block px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-theme-primary/10 hover:to-theme-accent/10 relative group text-theme-text"
-                                >
-                                  <span className="relative z-10">{child.title}</span>
-                                  <div className="absolute left-0 top-0 bottom-0 w-0 group-hover:w-1 transition-all duration-300 gradient-theme-primary rounded-r" />
-                                </a>
-                              ))}
+                        {activeDropdown === link.id &&
+                          link.children &&
+                          link.children.length > 0 && (
+                            <div className="absolute top-full left-0 mt-2">
+                              {/* Hover bridge */}
+                              <div className="absolute -top-2 left-0 right-0 h-2" />
+
+                              <div className="w-56 bg-white backdrop-blur-xl border border-gray-200 rounded-xl shadow-2xl py-2">
+                                {link.children.map((child) => (
+                                  <a
+                                    key={child.id}
+                                    href={getNavigationItemUrl(child)}
+                                    className="block px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-theme-primary/10 hover:to-theme-accent/10 relative group text-theme-text"
+                                  >
+                                    <span className="relative z-10">
+                                      {child.title}
+                                    </span>
+                                    <div className="absolute left-0 top-0 bottom-0 w-0 group-hover:w-1 transition-all duration-300 gradient-theme-primary rounded-r" />
+                                  </a>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     ) : (
                       // Regular link
@@ -451,30 +464,30 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                         />
                       </button>
                       {activeDropdown === link.id && (
-                          <div className="ml-4 mt-2 space-y-1 max-h-64 overflow-y-auto">
-                            {featuresPages.map((page) => (
-                              <a
-                                key={page.id}
-                                href={`/features/${page.slug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block text-sm py-2 px-3 rounded-lg transition-all duration-200 relative overflow-hidden group text-theme-text"
-                                onClick={() => setOpen(false)}
-                              >
-                                <div className="relative z-10 flex items-center gap-2">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-theme-primary" />
-                                  {page.title}
-                                </div>
-                                <div
-                                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                  style={{
-                                    background: `linear-gradient(90deg, var(--color-primary)10 0%, var(--color-accent)10 100%)`,
-                                  }}
-                                />
-                              </a>
-                            ))}
-                          </div>
-                        )}
+                        <div className="ml-4 mt-2 space-y-1 max-h-64 overflow-y-auto">
+                          {featuresPages.map((page) => (
+                            <a
+                              key={page.id}
+                              href={`/features/${page.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-sm py-2 px-3 rounded-lg transition-all duration-200 relative overflow-hidden group text-theme-text"
+                              onClick={() => setOpen(false)}
+                            >
+                              <div className="relative z-10 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-theme-primary" />
+                                {page.title}
+                              </div>
+                              <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                style={{
+                                  background: `linear-gradient(90deg, var(--color-primary)10 0%, var(--color-accent)10 100%)`,
+                                }}
+                              />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ) : isFeatureDropdown(link) ? (
                     <a
