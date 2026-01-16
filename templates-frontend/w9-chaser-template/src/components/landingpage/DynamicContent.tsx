@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import type { DynamicContentBlock } from "../../types/landing";
 import EasyIcon from "./IconRenderer"; // Add this import
-import { BookingBlock } from "./BookingBlock";
-import { DocumentUploadBlock } from "./DocumentUploadBlock";
-import { PaymentBlock } from "./PaymentBlock";
 
 const API_BASE_URL = "https://esign-admin.signmary.com";
 
@@ -692,15 +689,6 @@ const DynamicContentRenderer: React.FC<{ block: DynamicContentBlock }> = ({
           </div>
         </div>
       );
-
-    case "booking":
-      return <BookingBlock block={block as any} notaryPageId={1} />;
-
-    case "document_upload":
-      return <DocumentUploadBlock block={block as any} notaryPageId={1} />;
-
-    case "payment":
-      return <PaymentBlock block={block as any} />;
 
     default:
       return null;
