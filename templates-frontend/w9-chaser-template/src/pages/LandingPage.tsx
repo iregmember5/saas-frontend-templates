@@ -516,19 +516,36 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           </div>
 
           {/* Booking Section */}
-          <div id="appointment" className="scroll-fade-up">
-            <BookingBlock block={{ type: "booking", value: { booking_type: "office", calendar_source: "internal", duration_options: ["30 min", "1 hour", "2 hours"], buffer_time: 15, require_payment: false, confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." }, id: "booking-1" }} notaryPageId={1} />
-          </div>
+          <section id="appointment" className="scroll-fade-up py-20 bg-gradient-to-br from-theme-primary/10 to-theme-secondary/10">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-theme-text mb-8">
+                  Book Your Appointment
+                </h2>
+                <BookingBlock block={{ type: "booking", value: { booking_type: "office", calendar_source: "internal", duration_options: ["30 min", "1 hour", "2 hours"], buffer_time: 15, require_payment: false, confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." }, id: "booking-1" }} notaryPageId={1} />
+              </div>
+            </div>
+          </section>
 
           {/* Document Upload Section */}
-          <div id="document-upload" className="scroll-fade-up">
-            <DocumentUploadBlock block={{ type: "document_upload", value: { allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], max_file_size: 10, require_before_booking: false, instructions: "Please upload your documents securely. All files are encrypted and stored safely.", privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." }, id: "upload-1" }} notaryPageId={1} />
-          </div>
+          <section id="document-upload" className="scroll-fade-up py-20 bg-white">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-center text-theme-text mb-8">
+                Upload Your Documents
+              </h2>
+              <DocumentUploadBlock block={{ type: "document_upload", value: { allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], max_file_size: 10, require_before_booking: false, instructions: "Please upload your documents securely. All files are encrypted and stored safely.", privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." }, id: "upload-1" }} notaryPageId={1} />
+            </div>
+          </section>
 
           {/* Payment Section */}
-          <div id="payment" className="scroll-fade-up">
-            <PaymentBlock block={{ type: "payment", value: { payment_type: "full", amount: "99.00", description: "Secure payment for your service", require_before_proceeding: false, success_message: "Payment successful! You will receive a confirmation email shortly." }, id: "payment-1" }} />
-          </div>
+          <section id="payment" className="scroll-fade-up py-20 bg-gradient-to-br from-theme-primary/5 to-theme-accent/5">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-center text-theme-text mb-8">
+                Secure Payment
+              </h2>
+              <PaymentBlock block={{ type: "payment", value: { payment_type: "full", amount: "99.00", description: "Secure payment for your service", require_before_proceeding: false, success_message: "Payment successful! You will receive a confirmation email shortly." }, id: "payment-1" }} />
+            </div>
+          </section>
 
           {/* Card Sections */}
           {data.card_sections?.cards && data.card_sections.cards.length > 0 && (
