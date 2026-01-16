@@ -339,33 +339,25 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                     ) : hasDropdownChildren(link) ? (
                       // Regular dropdown
                       <div
-                        className="relative h-full flex items-center justify-center"
+                        className="relative"
                         onMouseEnter={() => setActiveDropdown(link.id)}
                         onMouseLeave={() => setActiveDropdown(null)}
                       >
-                        <div className="h-full flex items-center">
-                          <button className="flex items-center gap-1 text-sm font-semibold transition-all duration-300 hover:scale-105 relative group py-2 text-theme-text">
-                            {link.title}
-                            <ChevronDown
-                              size={16}
-                              className={`transition-transform duration-300 ${
-                                activeDropdown === link.id ? "rotate-180" : ""
-                              }`}
-                            />
-                            <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
-                          </button>
-                        </div>
+                        <button className="flex items-center gap-1 text-sm font-semibold transition-all duration-300 hover:scale-105 relative group py-2 text-theme-text">
+                          {link.title}
+                          <ChevronDown
+                            size={16}
+                            className={`transition-transform duration-300 ${
+                              activeDropdown === link.id ? "rotate-180" : ""
+                            }`}
+                          />
+                          <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
+                        </button>
 
                         {activeDropdown === link.id &&
                           link.children &&
                           link.children.length > 0 && (
-                            <div className="absolute top-full left-0 mt-2 w-56 backdrop-blur-xl bg-white/95 border border-gray-200 rounded-xl shadow-2xl py-2 z-[100]">
-                              {/* Invisible hover area above dropdown */}
-                              <div
-                                className="absolute -top-2 left-0 right-0 h-2 bg-transparent"
-                                onMouseEnter={() => setActiveDropdown(link.id)}
-                              />
-
+                            <div className="absolute top-full left-0 mt-2 w-56 backdrop-blur-xl bg-white border border-gray-200 rounded-xl shadow-2xl py-2 z-[100]">
                               {link.children.map((child) => (
                                 <a
                                   key={child.id}
