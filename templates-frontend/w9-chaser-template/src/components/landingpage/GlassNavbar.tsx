@@ -343,7 +343,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                     ) : hasDropdownChildren(link) ? (
                       // Regular dropdown
                       <div
-                        className="h-full flex items-center"
+                        className="relative h-full flex items-center"
                         onMouseEnter={() => setActiveDropdown(link.id)}
                         onMouseLeave={() => setActiveDropdown(null)}
                       >
