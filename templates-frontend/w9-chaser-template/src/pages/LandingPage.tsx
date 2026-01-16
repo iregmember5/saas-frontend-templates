@@ -484,12 +484,65 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
       {/* ===== DYNAMIC SECTION RENDERING ===== */}
       {data.section_order && data.section_order.length > 0 ? (
         // If section_order exists in API, render sections dynamically
-        data.section_order.map((sectionKey, index) => {
-          // Skip navbar as it's already rendered above
-          if (sectionKey === "navbar") return null;
+        <>
+          {data.section_order.map((sectionKey, index) => {
+            // Skip navbar as it's already rendered above
+            if (sectionKey === "navbar") return null;
+            
+            // Inject the three blocks before CTA
+            if (sectionKey === "cta") {
+              return (
+                <React.Fragment key={`cta-wrapper-${index}`}>
+                  <BookingBlock 
+                    block={{ 
+                      type: "booking", 
+                      value: { 
+                        booking_type: "office", 
+                        calendar_source: "internal", 
+                        duration_options: ["30 min", "1 hour", "2 hours"], 
+                        buffer_time: 15, 
+                        require_payment: false, 
+                        confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." 
+                      }, 
+                      id: "booking-static" 
+                    }} 
+                    notaryPageId={1} 
+                  />
+                  <DocumentUploadBlock 
+                    block={{ 
+                      type: "document_upload", 
+                      value: { 
+                        allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], 
+                        max_file_size: 10, 
+                        require_before_booking: false, 
+                        instructions: "Please upload your documents securely. All files are encrypted and stored safely.", 
+                        privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." 
+                      }, 
+                      id: "upload-static" 
+                    }} 
+                    notaryPageId={1} 
+                  />
+                  <PaymentBlock 
+                    block={{ 
+                      type: "payment", 
+                      value: { 
+                        payment_type: "full", 
+                        amount: "99.00", 
+                        description: "Secure payment for your service", 
+                        require_before_proceeding: false, 
+                        success_message: "Payment successful! You will receive a confirmation email shortly." 
+                      }, 
+                      id: "payment-static" 
+                    }} 
+                  />
+                  {renderSection(sectionKey, index)}
+                </React.Fragment>
+              );
+            }
 
-          return renderSection(sectionKey, index);
-        })
+            return renderSection(sectionKey, index);
+          })}
+        </>
       ) : (
         // Fallback: If no section_order, render in default order
         <>
@@ -587,6 +640,54 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           <div className="scroll-fade-up">
             <FAQ data={data} />
           </div>
+
+          {/* Booking Block */}
+          <BookingBlock 
+            block={{ 
+              type: "booking", 
+              value: { 
+                booking_type: "office", 
+                calendar_source: "internal", 
+                duration_options: ["30 min", "1 hour", "2 hours"], 
+                buffer_time: 15, 
+                require_payment: false, 
+                confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." 
+              }, 
+              id: "booking-static" 
+            }} 
+            notaryPageId={1} 
+          />
+
+          {/* Document Upload Block */}
+          <DocumentUploadBlock 
+            block={{ 
+              type: "document_upload", 
+              value: { 
+                allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], 
+                max_file_size: 10, 
+                require_before_booking: false, 
+                instructions: "Please upload your documents securely. All files are encrypted and stored safely.", 
+                privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." 
+              }, 
+              id: "upload-static" 
+            }} 
+            notaryPageId={1} 
+          />
+
+          {/* Payment Block */}
+          <PaymentBlock 
+            block={{ 
+              type: "payment", 
+              value: { 
+                payment_type: "full", 
+                amount: "99.00", 
+                description: "Secure payment for your service", 
+                require_before_proceeding: false, 
+                success_message: "Payment successful! You will receive a confirmation email shortly." 
+              }, 
+              id: "payment-static" 
+            }} 
+          />
 
           {/* CTA Section */}
           {(data.cta_head ||
