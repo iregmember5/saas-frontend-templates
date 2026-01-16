@@ -493,48 +493,54 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
             if (sectionKey === "cta") {
               return (
                 <React.Fragment key={`cta-wrapper-${index}`}>
-                  <BookingBlock 
-                    block={{ 
-                      type: "booking", 
-                      value: { 
-                        booking_type: "office", 
-                        calendar_source: "internal", 
-                        duration_options: ["30 min", "1 hour", "2 hours"], 
-                        buffer_time: 15, 
-                        require_payment: false, 
-                        confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." 
-                      }, 
-                      id: "booking-static" 
-                    }} 
-                    notaryPageId={1} 
-                  />
-                  <DocumentUploadBlock 
-                    block={{ 
-                      type: "document_upload", 
-                      value: { 
-                        allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], 
-                        max_file_size: 10, 
-                        require_before_booking: false, 
-                        instructions: "Please upload your documents securely. All files are encrypted and stored safely.", 
-                        privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." 
-                      }, 
-                      id: "upload-static" 
-                    }} 
-                    notaryPageId={1} 
-                  />
-                  <PaymentBlock 
-                    block={{ 
-                      type: "payment", 
-                      value: { 
-                        payment_type: "full", 
-                        amount: "99.00", 
-                        description: "Secure payment for your service", 
-                        require_before_proceeding: false, 
-                        success_message: "Payment successful! You will receive a confirmation email shortly." 
-                      }, 
-                      id: "payment-static" 
-                    }} 
-                  />
+                  <div id="appointment">
+                    <BookingBlock 
+                      block={{ 
+                        type: "booking", 
+                        value: { 
+                          booking_type: "office", 
+                          calendar_source: "internal", 
+                          duration_options: ["30 min", "1 hour", "2 hours"], 
+                          buffer_time: 15, 
+                          require_payment: false, 
+                          confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." 
+                        }, 
+                        id: "booking-static" 
+                      }} 
+                      notaryPageId={1} 
+                    />
+                  </div>
+                  <div id="document-upload">
+                    <DocumentUploadBlock 
+                      block={{ 
+                        type: "document_upload", 
+                        value: { 
+                          allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], 
+                          max_file_size: 10, 
+                          require_before_booking: false, 
+                          instructions: "Please upload your documents securely. All files are encrypted and stored safely.", 
+                          privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." 
+                        }, 
+                        id: "upload-static" 
+                      }} 
+                      notaryPageId={1} 
+                    />
+                  </div>
+                  <div id="payment">
+                    <PaymentBlock 
+                      block={{ 
+                        type: "payment", 
+                        value: { 
+                          payment_type: "full", 
+                          amount: "99.00", 
+                          description: "Secure payment for your service", 
+                          require_before_proceeding: false, 
+                          success_message: "Payment successful! You will receive a confirmation email shortly." 
+                        }, 
+                        id: "payment-static" 
+                      }} 
+                    />
+                  </div>
                   {renderSection(sectionKey, index)}
                 </React.Fragment>
               );
@@ -642,52 +648,58 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           </div>
 
           {/* Booking Block */}
-          <BookingBlock 
-            block={{ 
-              type: "booking", 
-              value: { 
-                booking_type: "office", 
-                calendar_source: "internal", 
-                duration_options: ["30 min", "1 hour", "2 hours"], 
-                buffer_time: 15, 
-                require_payment: false, 
-                confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." 
-              }, 
-              id: "booking-static" 
-            }} 
-            notaryPageId={1} 
-          />
+          <div id="appointment">
+            <BookingBlock 
+              block={{ 
+                type: "booking", 
+                value: { 
+                  booking_type: "office", 
+                  calendar_source: "internal", 
+                  duration_options: ["30 min", "1 hour", "2 hours"], 
+                  buffer_time: 15, 
+                  require_payment: false, 
+                  confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." 
+                }, 
+                id: "booking-static" 
+              }} 
+              notaryPageId={1} 
+            />
+          </div>
 
           {/* Document Upload Block */}
-          <DocumentUploadBlock 
-            block={{ 
-              type: "document_upload", 
-              value: { 
-                allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], 
-                max_file_size: 10, 
-                require_before_booking: false, 
-                instructions: "Please upload your documents securely. All files are encrypted and stored safely.", 
-                privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." 
-              }, 
-              id: "upload-static" 
-            }} 
-            notaryPageId={1} 
-          />
+          <div id="document-upload">
+            <DocumentUploadBlock 
+              block={{ 
+                type: "document_upload", 
+                value: { 
+                  allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], 
+                  max_file_size: 10, 
+                  require_before_booking: false, 
+                  instructions: "Please upload your documents securely. All files are encrypted and stored safely.", 
+                  privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." 
+                }, 
+                id: "upload-static" 
+              }} 
+              notaryPageId={1} 
+            />
+          </div>
 
           {/* Payment Block */}
-          <PaymentBlock 
-            block={{ 
-              type: "payment", 
-              value: { 
-                payment_type: "full", 
-                amount: "99.00", 
-                description: "Secure payment for your service", 
-                require_before_proceeding: false, 
-                success_message: "Payment successful! You will receive a confirmation email shortly." 
-              }, 
-              id: "payment-static" 
-            }} 
-          />
+          <div id="payment">
+            <PaymentBlock 
+              block={{ 
+                type: "payment", 
+                value: { 
+                  payment_type: "full", 
+                  amount: "99.00", 
+                  description: "Secure payment for your service", 
+                  require_before_proceeding: false, 
+                  success_message: "Payment successful! You will receive a confirmation email shortly." 
+                }, 
+                id: "payment-static" 
+              }} 
+            />
+          </div>
 
           {/* CTA Section */}
           {(data.cta_head ||
