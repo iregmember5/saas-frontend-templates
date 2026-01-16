@@ -359,10 +359,10 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                         {activeDropdown === link.id &&
                           link.children &&
                           link.children.length > 0 && (
-                            <div className="absolute top-full left-0 mt-0 w-48 backdrop-blur-md bg-white/95 border rounded-xl shadow-lg py-2 z-50 border-theme-primary/30 shadow-2xl">
+                            <div className="absolute top-full left-0 mt-2 w-56 backdrop-blur-xl bg-white/95 border border-gray-200 rounded-xl shadow-2xl py-2 z-[100]">
                               {/* Invisible hover area above dropdown */}
                               <div
-                                className="absolute -top-4 left-0 right-0 h-4 bg-transparent"
+                                className="absolute -top-2 left-0 right-0 h-2 bg-transparent"
                                 onMouseEnter={() => setActiveDropdown(link.id)}
                               />
 
@@ -370,10 +370,10 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                                 <a
                                   key={child.id}
                                   href={getNavigationItemUrl(child)}
-                                  className="block px-4 py-2 text-sm transition-all duration-200 hover:scale-105 relative group text-theme-text"
+                                  className="block px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-gradient-to-r hover:from-theme-primary/10 hover:to-theme-accent/10 relative group text-theme-text"
                                 >
-                                  {child.title}
-                                  <div className="absolute left-0 top-0 bottom-0 w-0 group-hover:w-1 transition-all duration-300 gradient-theme-primary" />
+                                  <span className="relative z-10">{child.title}</span>
+                                  <div className="absolute left-0 top-0 bottom-0 w-0 group-hover:w-1 transition-all duration-300 gradient-theme-primary rounded-r" />
                                 </a>
                               ))}
                             </div>
