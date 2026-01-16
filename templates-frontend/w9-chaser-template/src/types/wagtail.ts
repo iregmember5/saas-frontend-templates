@@ -22,3 +22,15 @@ export interface BookingBlock {
   };
   id: string;
 }
+
+export interface PaymentBlock {
+  type: "payment";
+  value: {
+    payment_type: "full" | "deposit";
+    amount: string;
+    description: string;
+    require_before_proceeding: boolean;
+    success_message: string;
+  };
+  id: string;
+}

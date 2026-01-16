@@ -17,6 +17,9 @@ import ProblemSolution from "../components/landingpage/ProblemSolution";
 import HowItWorks from "../components/landingpage/HowItWorks";
 import Pricing from "../components/landingpage/Pricing";
 import WebForm from "../components/landingpage/WebForm";
+import { BookingBlock } from "../components/landingpage/BookingBlock";
+import { DocumentUploadBlock } from "../components/landingpage/DocumentUploadBlock";
+import { PaymentBlock } from "../components/landingpage/PaymentBlock";
 
 interface LandingPageProps {
   onShowLogin?: () => void;
@@ -510,6 +513,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           {/* Pricing Section */}
           <div id="pricing" className="scroll-fade-up">
             <Pricing data={data} />
+          </div>
+
+          {/* Booking Section */}
+          <div id="appointment" className="scroll-fade-up">
+            <BookingBlock block={{ type: "booking", value: { booking_type: "office", calendar_source: "internal", duration_options: ["30 min", "1 hour", "2 hours"], buffer_time: 15, require_payment: false, confirmation_message: "Your appointment has been confirmed! We'll send you a confirmation email shortly." }, id: "booking-1" }} notaryPageId={1} />
+          </div>
+
+          {/* Document Upload Section */}
+          <div id="document-upload" className="scroll-fade-up">
+            <DocumentUploadBlock block={{ type: "document_upload", value: { allowed_file_types: [".pdf", ".doc", ".docx", ".jpg", ".png"], max_file_size: 10, require_before_booking: false, instructions: "Please upload your documents securely. All files are encrypted and stored safely.", privacy_notice: "Your documents are encrypted and stored securely. We never share your information with third parties." }, id: "upload-1" }} notaryPageId={1} />
+          </div>
+
+          {/* Payment Section */}
+          <div id="payment" className="scroll-fade-up">
+            <PaymentBlock block={{ type: "payment", value: { payment_type: "full", amount: "99.00", description: "Secure payment for your service", require_before_proceeding: false, success_message: "Payment successful! You will receive a confirmation email shortly." }, id: "payment-1" }} />
           </div>
 
           {/* Card Sections */}

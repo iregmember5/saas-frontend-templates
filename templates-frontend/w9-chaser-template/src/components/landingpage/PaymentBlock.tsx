@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { PaymentBlock as PaymentBlockType } from "../../../../notary-template/src/types/wagtail";
+import type { PaymentBlock as PaymentBlockType } from "../../types/wagtail";
 import { CreditCard, Lock, CheckCircle } from "lucide-react";
 
 interface PaymentBlockProps {
