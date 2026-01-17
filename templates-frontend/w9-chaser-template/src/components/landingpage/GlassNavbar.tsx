@@ -173,6 +173,14 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
     );
   }
 
+  function isServicesDropdown(item: NavigationItem): boolean {
+    return (
+      item.link_type === "dropdown" &&
+      (item.title.toLowerCase().includes("service") ||
+        item.title.toLowerCase() === "services")
+    );
+  }
+
   function hasDropdownChildren(item: NavigationItem): boolean {
     return (
       item.link_type === "dropdown" ||
@@ -341,7 +349,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                         {link.title}
                         <span className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full gradient-theme-primary" />
                       </a>
-                    ) : hasDropdownChildren(link) ? (
+                    ) : isServicesDropdown(link) || hasDropdownChildren(link) ? (
                       // Regular dropdown - FIXED VERSION
                       <div
                         className="relative"
