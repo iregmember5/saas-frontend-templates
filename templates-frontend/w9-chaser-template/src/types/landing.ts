@@ -375,7 +375,7 @@ export const fetchLandingPageData = async (): Promise<LandingPageData> => {
     const apiUrl = `${cmsUrl}/mypages/`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const response = await fetch(apiUrl, {
       method: "GET",
