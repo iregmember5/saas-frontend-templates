@@ -363,7 +363,10 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                         {activeDropdown === link.id &&
                           link.children &&
                           link.children.length > 0 && (
-                            <div className="absolute top-full left-0 pt-2 z-50">
+                            <div
+                              className="absolute top-full left-0 pt-2"
+                              style={{ zIndex: 10000 }}
+                            >
                               {/* Hover bridge - invisible element to maintain hover */}
                               <div className="absolute -top-2 left-0 right-0 h-2" />
 

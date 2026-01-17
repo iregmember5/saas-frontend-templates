@@ -289,6 +289,7 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin, onShowForm }) => {
           {/* Image Section - Right Side */}
           <motion.div
             className="lg:w-1/2 flex items-center justify-center lg:justify-end mt-6 sm:mt-8 lg:mt-0 w-full"
+            style={{ zIndex: 1 }}
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             animate={isInView ? { opacity: 1, x: 0, scale: 1 } : {}}
             transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
