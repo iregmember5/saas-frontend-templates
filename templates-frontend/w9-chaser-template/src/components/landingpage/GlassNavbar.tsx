@@ -205,7 +205,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
     <nav
       className={`${
         stickyNavbar ? "fixed" : "absolute"
-      } top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      } top-0 left-0 right-0 transition-all duration-500 ${
         scrolled
           ? "backdrop-blur-xl bg-theme-background/90 shadow-2xl border-b-2 border-theme-primary/30"
           : transparentOnHome
@@ -372,8 +372,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
                           link.children &&
                           link.children.length > 0 && (
                             <div
-                              className="absolute top-full left-0 pt-2"
-                              style={{ zIndex: 10000 }}
+                              className="absolute top-full left-0 pt-2 z-[10000]"
                             >
                               {/* Hover bridge - invisible element to maintain hover */}
                               <div className="absolute -top-2 left-0 right-0 h-2" />
