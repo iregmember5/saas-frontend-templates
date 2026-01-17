@@ -374,6 +374,9 @@ export const fetchLandingPageData = async (): Promise<LandingPageData> => {
     const { cmsUrl, subdomain, tenantId } = getApiConfig();
     const apiUrl = `${cmsUrl}/mypages/`;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
@@ -382,7 +385,10 @@ export const fetchLandingPageData = async (): Promise<LandingPageData> => {
         "X-Tenant-Id": tenantId,
         "X-Subdomain": subdomain,
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(
