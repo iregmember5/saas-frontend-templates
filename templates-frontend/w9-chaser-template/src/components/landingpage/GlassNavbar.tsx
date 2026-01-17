@@ -91,7 +91,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           },
           {
             id: 3,
-            title: "Pricing Plans",
+            title: "Pricing",
             url: "#pricing",
             link_type: "url" as const,
             order: 3,
@@ -99,7 +99,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           },
           {
             id: 4,
-            title: "Book Appointment",
+            title: "Appointment",
             url: "#appointment",
             link_type: "url" as const,
             order: 4,
@@ -107,7 +107,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           },
           {
             id: 5,
-            title: "Upload Documents",
+            title: "Upload Docs",
             url: "#document-upload",
             link_type: "url" as const,
             order: 5,
@@ -115,7 +115,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           },
           {
             id: 6,
-            title: "Make Payment",
+            title: "Payment",
             url: "#payment",
             link_type: "url" as const,
             order: 6,
