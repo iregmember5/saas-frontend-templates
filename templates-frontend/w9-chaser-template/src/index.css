@@ -1,9 +1,7 @@
-/* index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Dynamic Theme CSS Variables */
 :root {
   --color-primary: #3B82F6;
   --color-secondary: #1E40AF;
@@ -13,7 +11,6 @@
   --color-text: #1F2937;
 }
 
-/* Optional: Add custom global styles */
 * {
   margin: 0;
   padding: 0;
@@ -21,57 +18,42 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-background);
   color: var(--color-text);
 }
 
-/* Dynamic Theme Utility Classes */
 @layer utilities {
   .bg-theme-primary { background-color: var(--color-primary) !important; }
   .bg-theme-secondary { background-color: var(--color-secondary) !important; }
   .bg-theme-accent { background-color: var(--color-accent) !important; }
   .bg-theme-neutral { background-color: var(--color-neutral) !important; }
   .bg-theme-background { background-color: var(--color-background) !important; }
-  
   .text-theme-primary { color: var(--color-primary) !important; }
   .text-theme-secondary { color: var(--color-secondary) !important; }
   .text-theme-accent { color: var(--color-accent) !important; }
   .text-theme-neutral { color: var(--color-neutral) !important; }
   .text-theme-text { color: var(--color-text) !important; }
-  
   .border-theme-primary { border-color: var(--color-primary) !important; }
   .border-theme-secondary { border-color: var(--color-secondary) !important; }
   .border-theme-accent { border-color: var(--color-accent) !important; }
   .border-theme-neutral { border-color: var(--color-neutral) !important; }
-  
-  .gradient-theme-primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent)) !important;
-  }
-  
-  .gradient-theme-secondary {
-    background: linear-gradient(135deg, var(--color-secondary), var(--color-primary)) !important;
-  }
-
+  .gradient-theme-primary { background: linear-gradient(135deg, var(--color-primary), var(--color-accent)) !important; }
+  .gradient-theme-secondary { background: linear-gradient(135deg, var(--color-secondary), var(--color-primary)) !important; }
   .bg-theme-primary\/5 { background-color: color-mix(in srgb, var(--color-primary) 5%, transparent) !important; }
   .bg-theme-primary\/10 { background-color: color-mix(in srgb, var(--color-primary) 10%, transparent) !important; }
   .bg-theme-primary\/20 { background-color: color-mix(in srgb, var(--color-primary) 20%, transparent) !important; }
   .bg-theme-primary\/25 { background-color: color-mix(in srgb, var(--color-primary) 25%, transparent) !important; }
   .bg-theme-primary\/30 { background-color: color-mix(in srgb, var(--color-primary) 30%, transparent) !important; }
-  
   .bg-theme-neutral\/5 { background-color: color-mix(in srgb, var(--color-neutral) 5%, transparent) !important; }
   .bg-theme-neutral\/10 { background-color: color-mix(in srgb, var(--color-neutral) 10%, transparent) !important; }
-  
   .border-theme-primary\/10 { border-color: color-mix(in srgb, var(--color-primary) 10%, transparent) !important; }
   .border-theme-primary\/20 { border-color: color-mix(in srgb, var(--color-primary) 20%, transparent) !important; }
   .border-theme-primary\/25 { border-color: color-mix(in srgb, var(--color-primary) 25%, transparent) !important; }
   .border-theme-primary\/30 { border-color: color-mix(in srgb, var(--color-primary) 30%, transparent) !important; }
   .border-theme-primary\/40 { border-color: color-mix(in srgb, var(--color-primary) 40%, transparent) !important; }
-  
   .border-theme-neutral\/10 { border-color: color-mix(in srgb, var(--color-neutral) 10%, transparent) !important; }
   .border-theme-neutral\/20 { border-color: color-mix(in srgb, var(--color-neutral) 20%, transparent) !important; }
   .border-theme-neutral\/30 { border-color: color-mix(in srgb, var(--color-neutral) 30%, transparent) !important; }
