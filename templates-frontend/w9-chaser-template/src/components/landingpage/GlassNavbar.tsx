@@ -258,11 +258,11 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           </div>
           {/* Desktop Navigation */}
           {navbarStyle !== "centered" && (
-            <div className="hidden md:flex items-center gap-8 mx-8 flex-1 justify-center">
+            <div className="hidden md:flex items-center gap-8 mx-8 flex-1 justify-center relative z-50">
               {links
                 .sort((a, b) => a.order - b.order)
                 .map((link) => (
-                  <div key={link.id} className="relative">
+                  <div key={link.id} className="relative z-50">
                     {isFeatureDropdown(link) && featuresPages.length > 0 ? (
                       <div
                         className="relative h-full"
