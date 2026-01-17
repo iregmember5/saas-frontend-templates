@@ -40,13 +40,14 @@ export default defineConfig({
         manualChunks: {
           "react-vendor": ["react", "react-dom"],
           framer: ["framer-motion"],
+          icons: ["lucide-react", "react-icons"],
         },
         chunkFileNames: "assets/[name]-[hash].js",
         entryFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 10000,
     minify: "terser",
     terserOptions: {
       compress: {
