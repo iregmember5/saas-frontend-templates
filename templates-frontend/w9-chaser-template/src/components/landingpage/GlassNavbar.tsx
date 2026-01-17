@@ -201,19 +201,20 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
         scrolled
           ? "backdrop-blur-xl bg-theme-background/90 shadow-2xl border-b-2 border-theme-primary/30"
           : transparentOnHome
-          ? "bg-transparent"
-          : "backdrop-blur-md bg-theme-background/30 border-b border-theme-primary/20"
+            ? "bg-transparent"
+            : "backdrop-blur-md bg-theme-background/30 border-b border-theme-primary/20"
       } relative overflow-hidden`}
-      style={
-        backgroundImage
+      style={{
+        zIndex: 9999,
+        ...(backgroundImage
           ? {
               backgroundImage: `url(${getFullImageUrl(backgroundImage.url)})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }
-          : undefined
-      }
+          : {}),
+      }}
     >
       {backgroundImage && (
         <div className="absolute inset-0 bg-theme-background/80 backdrop-blur-sm" />

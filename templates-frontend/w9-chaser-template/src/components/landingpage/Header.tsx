@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin, onShowForm }) => {
           : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        zIndex: 1,
+        zIndex: 0,
       }}
     >
       {/* Simple background */}
