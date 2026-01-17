@@ -44,14 +44,14 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin, onShowForm }) => {
   const rightImageUrl = header_section_image?.url?.startsWith("http")
     ? header_section_image.url
     : header_section_image?.url
-    ? `${backendBaseUrl}${header_section_image.url}`
-    : null;
+      ? `${backendBaseUrl}${header_section_image.url}`
+      : null;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Start blinking after component mounts
@@ -79,6 +79,7 @@ const Header: React.FC<HeaderProps> = ({ data, onShowLogin, onShowForm }) => {
           : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        zIndex: 1,
       }}
     >
       {/* Simple background */}
