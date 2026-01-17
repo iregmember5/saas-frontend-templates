@@ -211,7 +211,7 @@ function GlassNavbar({ data, onShowLogin }: GlassNavbarProps) {
           : transparentOnHome
             ? "bg-transparent"
             : "backdrop-blur-md bg-theme-background/30 border-b border-theme-primary/20"
-      } relative overflow-hidden`}
+      } relative`}
       style={{
         zIndex: 9999,
         ...(backgroundImage
