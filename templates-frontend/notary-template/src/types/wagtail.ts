@@ -417,6 +417,111 @@ const parseStructValue = (structStr: string): any => {
   }
 };
 
+const parseJsonArrayParam = (value: string | null): string[] => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+};
+
+const applyAiPreviewOverrides = (pageData: NotaryPageData): NotaryPageData => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("ai_preview") !== "true") {
+    return pageData;
+  }
+
+  const pageTitle = params.get("page_title")?.trim() || "";
+  const heroTitle = params.get("hero_title")?.trim() || "";
+  const heroSubtitle = params.get("hero_subtitle")?.trim() || "";
+  const ctaPrimary = params.get("cta_primary")?.trim() || "";
+  const ctaSecondary = params.get("cta_secondary")?.trim() || "";
+  const features = parseJsonArrayParam(params.get("features"));
+  const benefits = parseJsonArrayParam(params.get("benefits"));
+  const testimonial = params.get("testimonial")?.trim() || "";
+
+  const nextBlocks = [...pageData.blocks];
+  const heroIndex = nextBlocks.findIndex((block) => block.type === "hero");
+  if (heroIndex >= 0) {
+    const heroBlock = nextBlocks[heroIndex] as HeroBlock;
+    nextBlocks[heroIndex] = {
+      ...heroBlock,
+      value: {
+        ...heroBlock.value,
+        headline: heroTitle || heroBlock.value.headline,
+        subheadline: heroSubtitle || heroBlock.value.subheadline,
+        primary_cta_label: ctaPrimary || heroBlock.value.primary_cta_label,
+        secondary_cta_label: ctaSecondary || heroBlock.value.secondary_cta_label,
+      },
+    };
+  }
+
+  if (features.length > 0 || benefits.length > 0) {
+    const servicesIndex = nextBlocks.findIndex(
+      (block) => block.type === "services_list"
+    );
+    const combined = [...features, ...benefits];
+    const aiServices = combined.map((text, index) => ({
+      service_name: text,
+      description: "",
+      short_description: "",
+      starting_price: "",
+      duration: "",
+      cta_label: "Learn More",
+      cta_action: "contact",
+      cta_target: "",
+      is_popular: index === 0,
+    }));
+
+    if (servicesIndex >= 0) {
+      const servicesBlock = nextBlocks[servicesIndex] as ServicesListBlock;
+      nextBlocks[servicesIndex] = {
+        ...servicesBlock,
+        value: {
+          ...servicesBlock.value,
+          services: aiServices,
+        },
+      };
+    }
+  }
+
+  if (testimonial) {
+    const testimonialsIndex = nextBlocks.findIndex(
+      (block) => block.type === "testimonials"
+    );
+    if (testimonialsIndex >= 0) {
+      const testimonialsBlock = nextBlocks[testimonialsIndex] as TestimonialsBlock;
+      nextBlocks[testimonialsIndex] = {
+        ...testimonialsBlock,
+        value: {
+          ...testimonialsBlock.value,
+          display_type: "manual",
+          testimonials: [
+            {
+              client_name: "AI Generated",
+              rating: 5,
+              testimonial_text: testimonial,
+            },
+          ],
+          max_reviews: 1,
+        },
+      };
+    }
+  }
+
+  return {
+    ...pageData,
+    title: pageTitle || pageData.title,
+    meta: {
+      ...pageData.meta,
+      seo_title: pageTitle || pageData.meta.seo_title,
+    },
+    blocks: nextBlocks,
+  };
+};
+
 export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
   const { mockNotaryData } = await import("../utils/mockData");
 
@@ -435,13 +540,13 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
 
     if (!response.ok) {
       console.warn("API not available, using mock data");
-      return mockNotaryData;
+      return applyAiPreviewOverrides(mockNotaryData);
     }
 
     const data: any = await response.json();
     if (!data?.items?.length) {
       console.warn("No API data, using mock data");
-      return mockNotaryData;
+      return applyAiPreviewOverrides(mockNotaryData);
     }
 
     const page: any = data.items[0];
@@ -625,7 +730,7 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
       (b) => !apiBlockIds.has(b.id)
     );
 
-    return {
+    const mergedData: NotaryPageData = {
       id: page.id,
       title: page.title,
       meta: {
@@ -640,8 +745,9 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
       header_config: page.header_config,
       footer_config: page.footer_config,
     };
+    return applyAiPreviewOverrides(mergedData);
   } catch (error) {
     console.error("API error, using mock data:", error);
-    return mockNotaryData;
+    return applyAiPreviewOverrides(mockNotaryData);
   }
 };
