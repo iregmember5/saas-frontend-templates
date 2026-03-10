@@ -52,7 +52,14 @@ export const fetchLandingPageData = async (): Promise<SalesPages | null> => {
       return null;
     }
 
-    return data.items[0];
+    const item = data.items[0];
+    const contentType = item?.content_type || item?.meta?.type;
+    if (contentType && !String(contentType).includes("SalesPage")) {
+      throw new Error(
+        `Unsupported content type: ${contentType}. This template supports SalesPage only.`
+      );
+    }
+    return item;
   } catch (error) {
     console.error("Error fetching landing page data:", error);
     return null;
@@ -153,7 +160,14 @@ export const fetchWorkbookPageData = async (): Promise<SalesPages | null> => {
       return null;
     }
 
-    return data.items[0];
+    const item = data.items[0];
+    const contentType = item?.content_type || item?.meta?.type;
+    if (contentType && !String(contentType).includes("SalesPage")) {
+      throw new Error(
+        `Unsupported content type: ${contentType}. This template supports SalesPage only.`
+      );
+    }
+    return item;
   } catch (error) {
     console.error("Error fetching workbook page data:", error);
     return null;

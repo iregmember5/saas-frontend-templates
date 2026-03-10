@@ -13,13 +13,17 @@ function App() {
   const [pageData, setPageData] = useState<NotaryPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryAt, setRetryAt] = useState<string | null>(null);
 
   useEffect(() => {
+    let retryTimer: number | undefined;
     const loadData = async () => {
       try {
         setLoading(true);
         const data = await fetchNotaryPageData();
         setPageData(data);
+        setRetryAt(null);
 
         if (data.meta.seo_title) {
           document.title = data.meta.seo_title;
@@ -36,13 +40,25 @@ function App() {
       } catch (err) {
         console.error("Failed to load page data:", err);
         setError(err instanceof Error ? err.message : "Failed to load page");
+        if (!retryTimer && retryCount < 1) {
+          const nextRetry = new Date(Date.now() + 2 * 60 * 1000);
+          setRetryAt(nextRetry.toLocaleTimeString());
+          retryTimer = window.setTimeout(() => {
+            setRetryCount((count) => count + 1);
+          }, 2 * 60 * 1000);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, []);
+    return () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, [retryCount]);
 
   if (loading) {
     return (
@@ -62,7 +78,11 @@ function App() {
           <h2 className="text-3xl font-bold text-theme-text mb-4">
             Unable to Load Page
           </h2>
-          <p className="text-theme-neutral mb-8">{error}</p>
+          <p className="text-theme-neutral mb-4">{error}</p>
+          <p className="text-theme-neutral mb-8 text-sm">
+            SSL certificates can take 2-3 minutes to provision after deployment.
+            {retryAt ? ` Auto-retrying at ${retryAt}.` : ""}
+          </p>
           <button
             onClick={() => window.location.reload()}
             className="px-8 py-3 bg-theme-primary text-white rounded-lg font-semibold hover:bg-theme-secondary transition-all"

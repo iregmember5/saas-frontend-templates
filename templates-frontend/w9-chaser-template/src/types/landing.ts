@@ -232,6 +232,8 @@ export interface PricingSection {
 }
 
 export interface LandingPageData {
+  content_type?: string;
+  page_type?: string;
   header_config?: HeaderConfig;
   footer_config?: FooterConfig;
   sections?: Section[];
@@ -402,7 +404,14 @@ export const fetchLandingPageData = async (): Promise<LandingPageData> => {
       throw new Error("No landing page data available");
     }
 
-    return data.items[0];
+    const item = data.items[0] as LandingPageData;
+    const contentType = item.content_type || (item as any).meta?.type;
+    if (contentType && !contentType.includes("LandingPage")) {
+      throw new Error(
+        `Unsupported content type: ${contentType}. This template supports LandingPage only.`
+      );
+    }
+    return item;
   } catch (error) {
     console.error("Error fetching landing page data:", error);
     throw error;

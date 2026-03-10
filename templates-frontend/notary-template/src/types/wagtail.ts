@@ -550,6 +550,12 @@ export const fetchNotaryPageData = async (): Promise<NotaryPageData> => {
     }
 
     const page: any = data.items[0];
+    const contentType = page?.content_type || page?.meta?.type;
+    if (contentType && !String(contentType).includes("NotaryPage")) {
+      throw new Error(
+        `Unsupported content type: ${contentType}. This template supports NotaryPage only.`
+      );
+    }
 
     // Process dynamic_content blocks
     const dynamicBlocks: NotaryBlock[] = (page.dynamic_content || []).map(

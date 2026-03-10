@@ -26,6 +26,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [themeColors, setThemeColors] = useState<any>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryAt, setRetryAt] = useState<string | null>(null);
 
   // Scroll animation observer - triggers on both scroll down and up
   useEffect(() => {
@@ -58,6 +60,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
   const { setTheme } = useTheme();
 
   useEffect(() => {
+    let retryTimer: number | undefined;
     const loadData = async () => {
       try {
         setLoading(true);
@@ -102,18 +105,31 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
         }
 
         setError(null);
+        setRetryAt(null);
       } catch (err) {
         console.error("Failed to load landing page:", err);
         setError(
           err instanceof Error ? err.message : "Failed to load page data"
         );
+        if (!retryTimer && retryCount < 1) {
+          const nextRetry = new Date(Date.now() + 2 * 60 * 1000);
+          setRetryAt(nextRetry.toLocaleTimeString());
+          retryTimer = window.setTimeout(() => {
+            setRetryCount((count) => count + 1);
+          }, 2 * 60 * 1000);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, []);
+    return () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, [retryCount]);
 
   // ===== DYNAMIC SECTION RENDERING FUNCTION =====
   const renderSection = (sectionKey: string, index: number) => {
@@ -263,7 +279,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           <h2 className="text-3xl font-bold text-theme-text mb-3">
             Unable to Load Page
           </h2>
-          <p className="text-theme-neutral mb-8 text-lg">{error}</p>
+          <p className="text-theme-neutral mb-4 text-lg">{error}</p>
+          <p className="text-theme-neutral mb-8 text-sm">
+            SSL certificates can take 2-3 minutes to provision after deployment.
+            {retryAt ? ` Auto-retrying at ${retryAt}.` : ""}
+          </p>
           <button
             onClick={() => window.location.reload()}
             className="px-8 py-4 gradient-theme-primary text-white rounded-xl hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"

@@ -15,26 +15,42 @@ function App() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryAt, setRetryAt] = useState<string | null>(null);
 
   useEffect(() => {
+    let retryTimer: number | undefined;
     const loadData = async () => {
       try {
         setLoading(true);
         const data = await fetchLandingPageData();
         if (data) {
           setPageData(data);
+          setRetryAt(null);
         } else {
           setError("Failed to load page data");
         }
       } catch (err: any) {
         setError(err.message);
+        if (!retryTimer && retryCount < 1) {
+          const nextRetry = new Date(Date.now() + 2 * 60 * 1000);
+          setRetryAt(nextRetry.toLocaleTimeString());
+          retryTimer = window.setTimeout(() => {
+            setRetryCount((count) => count + 1);
+          }, 2 * 60 * 1000);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, []);
+    return () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, [retryCount]);
 
   if (loading) {
     return (
@@ -57,7 +73,11 @@ function App() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
             Oops! Something went wrong
           </h2>
-          <p className="text-red-600 dark:text-red-400 mb-6">{error}</p>
+          <p className="text-red-600 dark:text-red-400 mb-3">{error}</p>
+          <p className="text-gray-600 dark:text-slate-300 mb-6 text-sm">
+            SSL certificates can take 2-3 minutes to provision after deployment.
+            {retryAt ? ` Auto-retrying at ${retryAt}.` : ""}
+          </p>
           <button
             onClick={() => window.location.reload()}
             className="bg-blue-600 dark:bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 hover:shadow-lg"

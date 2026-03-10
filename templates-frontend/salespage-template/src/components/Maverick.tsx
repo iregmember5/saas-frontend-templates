@@ -45,8 +45,14 @@ export default function TaxAdvisorLandingPage() {
   const [workbookData, setWorkbookData] = useState<SalesPages | null>(null);
   const [featuresData, setFeaturesData] = useState<FeaturesPageData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryAt, setRetryAt] = useState<string | null>(null);
 
   useEffect(() => {
+    let retryTimer: number | undefined;
+    setLoading(true);
+    setError(null);
     Promise.all([
       fetchLandingPageData(),
       fetchAllFeaturesPages(),
@@ -56,10 +62,29 @@ export default function TaxAdvisorLandingPage() {
         setPageData(landingData);
         setFeaturesData(featuresData);
         setWorkbookData(workbookData);
-        setLoading(false);
+        setRetryAt(null);
       })
-      .catch(console.error);
-  }, []);
+      .catch((err) => {
+        const message =
+          err instanceof Error ? err.message : "Failed to load page data";
+        setError(message);
+        if (!retryTimer && retryCount < 1) {
+          const nextRetry = new Date(Date.now() + 2 * 60 * 1000);
+          setRetryAt(nextRetry.toLocaleTimeString());
+          retryTimer = window.setTimeout(() => {
+            setRetryCount((count) => count + 1);
+          }, 2 * 60 * 1000);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+    return () => {
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, [retryCount]);
 
   console.log("Landing Page Data:", pageData);
   console.log("Features Pages Data:", featuresData);
@@ -97,6 +122,27 @@ export default function TaxAdvisorLandingPage() {
     return (
       <div className="geometric-bg text-white fixed inset-0 w-screen h-screen flex items-center justify-center">
         <div className="text-2xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="geometric-bg text-white fixed inset-0 w-screen h-screen flex items-center justify-center">
+        <div className="text-center max-w-xl px-6">
+          <div className="text-4xl mb-3">Error</div>
+          <p className="text-sm text-orange-200 mb-3">{error}</p>
+          <p className="text-xs text-orange-200 mb-6">
+            SSL certificates can take 2-3 minutes to provision after deployment.
+            {retryAt ? ` Auto-retrying at ${retryAt}.` : ""}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-full text-sm"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
