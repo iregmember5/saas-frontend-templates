@@ -4,15 +4,6 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 import IconRenderer from "./IconRenderer";
 import WebForm from "./WebForm";
-import OrderTemplateForm from "./OrderTemplateForm";
-import EventRegistrationForm from "./EventRegistrationForm";
-import TattooConsentForm from "./TattooConsentForm";
-import NewsletterSubscriptionForm from "./NewsletterSubscriptionForm";
-import MusicSubmissionForm from "./MusicSubmissionForm";
-import BloodDonationForm from "./BloodDonationForm";
-import ComprehensiveAssessmentForm from "./ComprehensiveAssessmentForm";
-import FoodOrderForm from "./FoodOrderForm";
-import IRSClientOrganizerForm from "./IRSClientOrganizerForm";
 import {
   fetchAllSalesPages,
   fetchAllFeaturesPages,
@@ -20,7 +11,7 @@ import {
   prependImageUrl,
   type SalesPages,
   type FeaturesPageData,
-} from "../../types/maverick";
+} from "../types/maverick";
 
 const styles = `
   @keyframes scroll {
@@ -65,18 +56,6 @@ export default function TaxAdvisorLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [pageData, setPageData] = useState<SalesPages | null>(null);
   const [showWebForm, setShowWebForm] = useState(false);
-  const [showOrderTemplate, setShowOrderTemplate] = useState(false);
-  const [showEventTemplate, setShowEventTemplate] = useState(false);
-  const [showTattooTemplate, setShowTattooTemplate] = useState(false);
-  const [showNewsletterTemplate, setShowNewsletterTemplate] = useState(false);
-  const [showMusicTemplate, setShowMusicTemplate] = useState(false);
-  const [showBloodDonationTemplate, setShowBloodDonationTemplate] =
-    useState(false);
-  const [showComprehensiveTemplate, setShowComprehensiveTemplate] =
-    useState(false);
-  const [showFoodOrderTemplate, setShowFoodOrderTemplate] = useState(false);
-  const [showIRSOrganizerTemplate, setShowIRSOrganizerTemplate] =
-    useState(false);
   const [webformPageData, setWebformPageData] = useState<any>(null);
   const [isLoadingWebForm, setIsLoadingWebForm] = useState(false);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
@@ -851,68 +830,18 @@ export default function TaxAdvisorLandingPage() {
         />
       )}
 
-      <OrderTemplateForm
-        isOpen={showOrderTemplate}
-        onClose={() => setShowOrderTemplate(false)}
-      />
-      <EventRegistrationForm
-        isOpen={showEventTemplate}
-        onClose={() => setShowEventTemplate(false)}
-      />
-      <TattooConsentForm
-        isOpen={showTattooTemplate}
-        onClose={() => setShowTattooTemplate(false)}
-      />
-      <NewsletterSubscriptionForm
-        isOpen={showNewsletterTemplate}
-        onClose={() => setShowNewsletterTemplate(false)}
-      />
-      <MusicSubmissionForm
-        isOpen={showMusicTemplate}
-        onClose={() => setShowMusicTemplate(false)}
-      />
-      <BloodDonationForm
-        isOpen={showBloodDonationTemplate}
-        onClose={() => setShowBloodDonationTemplate(false)}
-      />
-      <ComprehensiveAssessmentForm
-        isOpen={showComprehensiveTemplate}
-        onClose={() => setShowComprehensiveTemplate(false)}
-      />
-      <FoodOrderForm
-        isOpen={showFoodOrderTemplate}
-        onClose={() => setShowFoodOrderTemplate(false)}
-      />
-      <IRSClientOrganizerForm
-        isOpen={showIRSOrganizerTemplate}
-        onClose={() => setShowIRSOrganizerTemplate(false)}
-      />
-
       {/* Floating CTA Button */}
-      {showFloatingButton &&
-        !showWebForm &&
-        !showOrderTemplate &&
-        !showEventTemplate &&
-        !showTattooTemplate &&
-        !showNewsletterTemplate &&
-        !showMusicTemplate &&
-        !showBloodDonationTemplate &&
-        !showComprehensiveTemplate &&
-        !showFoodOrderTemplate &&
-        !showIRSOrganizerTemplate &&
-        getFloatingButtonText() && (
-          <div className="fixed top-4 sm:top-8 left-1/2 -translate-x-1/2 z-[10000] px-3">
-            <button
-              onClick={handleOpenWebForm}
-              disabled={isLoadingWebForm}
-              className="bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 text-black font-black py-2 sm:py-3 md:py-4 px-4 sm:px-6 md:px-8 rounded-full text-xs sm:text-sm md:text-lg hover:scale-110 transition-all shadow-2xl hover:shadow-yellow-500/50 animate-[glow_2s_ease-in-out_infinite] disabled:opacity-50 whitespace-nowrap"
-            >
-              {isLoadingWebForm
-                ? "Loading..."
-                : `🎯 ${getFloatingButtonText()}`}
-            </button>
-          </div>
-        )}
+      {showFloatingButton && !showWebForm && getFloatingButtonText() && (
+        <div className="fixed top-4 sm:top-8 left-1/2 -translate-x-1/2 z-[10000] px-3">
+          <button
+            onClick={handleOpenWebForm}
+            disabled={isLoadingWebForm}
+            className="bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 text-black font-black py-2 sm:py-3 md:py-4 px-4 sm:px-6 md:px-8 rounded-full text-xs sm:text-sm md:text-lg hover:scale-110 transition-all shadow-2xl hover:shadow-yellow-500/50 animate-[glow_2s_ease-in-out_infinite] disabled:opacity-50 whitespace-nowrap"
+          >
+            {isLoadingWebForm ? "Loading..." : `🎯 ${getFloatingButtonText()}`}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

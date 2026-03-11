@@ -483,10 +483,10 @@ const WebForm: React.FC<WebFormProps> = ({
         );
 
       case "select":
-        const isNumericRating = cleanChoices.every(c => !isNaN(parseInt(c)));
-        
+        const isNumericRating = cleanChoices.every((c) => !isNaN(parseInt(c)));
+
         if (isNumericRating) {
-          const maxRating = Math.max(...cleanChoices.map(c => parseInt(c)));
+          const maxRating = Math.max(...cleanChoices.map((c) => parseInt(c)));
           return (
             <div className="flex gap-1">
               {Array.from({ length: maxRating + 1 }, (_, i) => (
@@ -499,8 +499,8 @@ const WebForm: React.FC<WebFormProps> = ({
                   <svg
                     className={`w-8 h-8 ${
                       formData[field.id] && parseInt(formData[field.id]) >= i
-                        ? 'text-yellow-400 fill-yellow-400'
-                        : 'text-gray-300'
+                        ? "text-yellow-400 fill-yellow-400"
+                        : "text-gray-300"
                     }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -512,7 +512,7 @@ const WebForm: React.FC<WebFormProps> = ({
             </div>
           );
         }
-        
+
         return (
           <select
             value={formData[field.id] || ""}

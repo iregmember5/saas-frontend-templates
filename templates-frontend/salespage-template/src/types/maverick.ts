@@ -1,5 +1,3 @@
-import { getApiConfig } from '../config/api';
-
 // ===== Type Definitions =====
 export interface SalesPages {
   [key: string]: any;
@@ -18,26 +16,27 @@ export interface FeaturesPageApiResponse {
 }
 
 // ===== API Service Functions =====
-const imageBaseUrl = "https://esign-admin.signmary.com";
+
+const baseApiUrl = "https://mypowerly.com/v1/blogs/api/v2";
+const frontendUrl = "https://mypowerly.com";
+
+const imageBaseUrl = "https://mypowerly.com/v1";
 
 export const prependImageUrl = (url: string | undefined) => {
   if (!url) return url;
-  if (url.startsWith('http')) return url;
+  if (url.startsWith("http")) return url;
   return `${imageBaseUrl}${url}`;
 };
 
 export const fetchLandingPageData = async (): Promise<SalesPages | null> => {
   try {
-    const { cmsUrl, subdomain, tenantId } = getApiConfig();
-    const apiUrl = `${cmsUrl}/sales-pages/?fields=*`;
+    const apiUrl = `${baseApiUrl}/sales-pages/?fields=*`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": window.location.origin,
-        "X-Tenant-Id": tenantId,
-        "X-Subdomain": subdomain,
+        "X-Frontend-Url": frontendUrl,
       },
     });
 
@@ -52,16 +51,39 @@ export const fetchLandingPageData = async (): Promise<SalesPages | null> => {
       return null;
     }
 
-    const item = data.items[0];
-    const contentType = item?.content_type || item?.meta?.type;
-    if (contentType && !String(contentType).includes("SalesPage")) {
-      throw new Error(
-        `Unsupported content type: ${contentType}. This template supports SalesPage only.`
-      );
-    }
-    return item;
+    return data.items[0];
   } catch (error) {
     console.error("Error fetching landing page data:", error);
+    return null;
+  }
+};
+
+export const fetchMyPagesData = async (): Promise<SalesPages | null> => {
+  try {
+    const apiUrl = `${baseApiUrl}/mypages/`;
+
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Frontend-Url": frontendUrl,
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch mypages data: ${response.status}`);
+      return null;
+    }
+
+    const data: ApiResponse = await response.json();
+
+    if (!data || !data.items || data.items.length === 0) {
+      return null;
+    }
+
+    return data.items[0];
+  } catch (error) {
+    console.error("Error fetching mypages data:", error);
     return null;
   }
 };
@@ -69,22 +91,19 @@ export const fetchLandingPageData = async (): Promise<SalesPages | null> => {
 // ===== NEW: Fetch all FeaturesPages =====
 export const fetchAllFeaturesPages = async (): Promise<FeaturesPageData[]> => {
   try {
-    const { cmsUrl, subdomain, tenantId } = getApiConfig();
-    const apiUrl = `${cmsUrl}/features-pages/`;
+    const apiUrl = `${baseApiUrl}/features-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": window.location.origin,
-        "X-Tenant-Id": tenantId,
-        "X-Subdomain": subdomain,
+        "X-Frontend-Url": frontendUrl,
       },
     });
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch features pages: ${response.status} ${response.statusText}`
+        `Failed to fetch features pages: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -103,25 +122,22 @@ export const fetchAllFeaturesPages = async (): Promise<FeaturesPageData[]> => {
 
 // ===== NEW: Fetch single FeaturesPage by ID or slug =====
 export const fetchFeaturesPageById = async (
-  id: number
+  id: number,
 ): Promise<FeaturesPageData> => {
   try {
-    const { cmsUrl, subdomain, tenantId } = getApiConfig();
-    const apiUrl = `${cmsUrl}/features-pages/${id}/`;
+    const apiUrl = `${baseApiUrl}/features-pages/${id}/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": window.location.origin,
-        "X-Tenant-Id": tenantId,
-        "X-Subdomain": subdomain,
+        "X-Frontend-Url": frontendUrl,
       },
     });
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch features page: ${response.status} ${response.statusText}`
+        `Failed to fetch features page: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -133,19 +149,44 @@ export const fetchFeaturesPageById = async (
   }
 };
 
-
-export const fetchWorkbookPageData = async (): Promise<SalesPages | null> => {
+export const fetchAllSalesPages = async (): Promise<SalesPages[]> => {
   try {
-    const { cmsUrl, subdomain, tenantId } = getApiConfig();
-    const apiUrl = `${cmsUrl}/features-pages/`;
+    const apiUrl = `${baseApiUrl}/sales-pages/`;
 
     const response = await fetch(apiUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Frontend-Url": window.location.origin,
-        "X-Tenant-Id": tenantId,
-        "X-Subdomain": subdomain,
+        "X-Frontend-Url": frontendUrl,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sales pages: ${response.status}`);
+    }
+
+    const data: ApiResponse = await response.json();
+
+    if (!data || !data.items) {
+      return [];
+    }
+
+    return data.items;
+  } catch (error) {
+    console.error("Error fetching sales pages:", error);
+    return [];
+  }
+};
+
+export const fetchWorkbookPageData = async (): Promise<SalesPages | null> => {
+  try {
+    const apiUrl = `${baseApiUrl}/features-pages/`;
+
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Frontend-Url": frontendUrl,
       },
     });
 
@@ -160,14 +201,7 @@ export const fetchWorkbookPageData = async (): Promise<SalesPages | null> => {
       return null;
     }
 
-    const item = data.items[0];
-    const contentType = item?.content_type || item?.meta?.type;
-    if (contentType && !String(contentType).includes("SalesPage")) {
-      throw new Error(
-        `Unsupported content type: ${contentType}. This template supports SalesPage only.`
-      );
-    }
-    return item;
+    return data.items[0];
   } catch (error) {
     console.error("Error fetching workbook page data:", error);
     return null;
