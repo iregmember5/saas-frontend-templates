@@ -49,6 +49,89 @@ export default function TaxAdvisorLandingPage() {
   const [retryCount, setRetryCount] = useState(0);
   const [retryAt, setRetryAt] = useState<string | null>(null);
 
+  const parseJsonArrayParam = (value: string | null): string[] => {
+    if (!value) return [];
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const applyAiPreviewOverrides = (data: SalesPages | null) => {
+    if (!data) return data;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("ai_preview") !== "true") {
+      return data;
+    }
+
+    const pageTitle = params.get("page_title")?.trim() || "";
+    const heroTitle = params.get("hero_title")?.trim() || "";
+    const heroSubtitle = params.get("hero_subtitle")?.trim() || "";
+    const heroDescription = params.get("hero_description")?.trim() || "";
+    const ctaPrimary = params.get("cta_primary")?.trim() || "";
+    const ctaSecondary = params.get("cta_secondary")?.trim() || "";
+    const features = parseJsonArrayParam(params.get("features"));
+    const benefits = parseJsonArrayParam(params.get("benefits"));
+
+    const combinedCards = [...features, ...benefits].slice(0, 3).map((text, index) => ({
+      name: `Highlight ${index + 1}`,
+      description: text,
+    }));
+
+    return {
+      ...data,
+      header_section: {
+        ...data.header_section,
+        title: pageTitle || data.header_section?.title,
+        line_one: heroTitle || data.header_section?.line_one,
+        button: {
+          ...data.header_section?.button,
+          text: ctaPrimary || data.header_section?.button?.text,
+        },
+      },
+      main_hero_section: {
+        ...data.main_hero_section,
+        heading: heroTitle || pageTitle || data.main_hero_section?.heading,
+        subheading:
+          heroSubtitle ||
+          heroDescription ||
+          data.main_hero_section?.subheading,
+        button: {
+          ...data.main_hero_section?.button,
+          text: ctaPrimary || data.main_hero_section?.button?.text,
+        },
+      },
+      secondary_cta_section: {
+        ...data.secondary_cta_section,
+        button: {
+          ...data.secondary_cta_section?.button,
+          text: ctaSecondary || data.secondary_cta_section?.button?.text,
+        },
+      },
+      primary_cta_section: {
+        ...data.primary_cta_section,
+        button: {
+          ...data.primary_cta_section?.button,
+          text: ctaPrimary || data.primary_cta_section?.button?.text,
+        },
+      },
+      reusable_sections: Array.isArray(data.reusable_sections)
+        ? data.reusable_sections.map((section: any, index: number) => {
+            if (index !== 0) return section;
+            return {
+              ...section,
+              heading: section.heading || "What You'll Get",
+              subheading: heroTitle || section.subheading,
+              description: heroDescription || section.description,
+              cards: combinedCards.length > 0 ? combinedCards : section.cards,
+            };
+          })
+        : data.reusable_sections,
+    };
+  };
+
   useEffect(() => {
     let retryTimer: number | undefined;
     setLoading(true);
@@ -59,7 +142,7 @@ export default function TaxAdvisorLandingPage() {
       fetchWorkbookPageData(),
     ])
       .then(([landingData, featuresData, workbookData]) => {
-        setPageData(landingData);
+        setPageData(applyAiPreviewOverrides(landingData));
         setFeaturesData(featuresData);
         setWorkbookData(workbookData);
         setRetryAt(null);
