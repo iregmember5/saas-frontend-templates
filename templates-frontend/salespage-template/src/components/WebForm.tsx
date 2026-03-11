@@ -103,7 +103,7 @@ const WebForm: React.FC<WebFormProps> = ({
     {},
   );
 
-  const handleChange = (fieldId: number, value: any) => {
+  const handleChange = (fieldId: number | string, value: any) => {
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
     setErrors((prev) => ({ ...prev, [fieldId]: "" }));
   };
