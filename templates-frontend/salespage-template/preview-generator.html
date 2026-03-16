@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Preview Test Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        .array-input {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .array-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .array-item input {
+            flex: 1;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 16px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-small {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        .btn-remove {
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+        .btn-add {
+            background: #10b981;
+            color: white;
+            margin-top: 10px;
+        }
+        .preview-url {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border: 2px solid #e0e0e0;
+        }
+        .preview-url h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .url-display {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #667eea;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 15px;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 AI Preview URL Generator</h1>
+        <p class="subtitle">Generate a preview URL for your AI-generated sales page content</p>
+
+        <form id="previewForm">
+            <div class="form-group">
+                <label>Page Title</label>
+                <input type="text" id="page_title" placeholder="Email Marketing Agency: ROI Driven" value="Email Marketing Agency: ROI Driven">
+                <div class="help-text">Shown in the top banner</div>
+            </div>
+
+            <div class="form-group">
+                <label>Hero Title</label>
+                <input type="text" id="hero_title" placeholder="Unlock Explosive Growth" value="Unlock Explosive Growth: Our Email Marketing Agency Drives Real Revenue">
+                <div class="help-text">Main headline on the page</div>
+            </div>
+
+            <div class="form-group">
+                <label>Hero Subtitle</label>
+                <input type="text" id="hero_subtitle" placeholder="Struggling with low engagement?" value="Struggling with low engagement or inconsistent sales? We deliver profitable email funnels that convert.">
+            </div>
+
+            <div class="form-group">
+                <label>Hero Description</label>
+                <textarea id="hero_description" placeholder="We specialize in...">We specialize in data-driven email campaigns, advanced automation, and segmentation. Our unique approach boosts engagement, converts leads, and drives measurable revenue for your business.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Primary CTA Button</label>
+                <input type="text" id="cta_primary" placeholder="Claim Your Strategy Session" value="Claim Your Strategy Session">
+            </div>
+
+            <div class="form-group">
+                <label>Secondary CTA Button</label>
+                <input type="text" id="cta_secondary" placeholder="Explore Our Services" value="Explore Our Services">
+            </div>
+
+            <div class="form-group">
+                <label>Features</label>
+                <div class="array-input" id="features-container">
+                    <div class="array-item">
+                        <input type="text" class="feature-input" value="Get a personalized email strategy tailored to your business goals, ensuring every message resonates and converts.">
+                        <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </div>
+                    <div class="array-item">
+                        <input type="text" class="feature-input" value="Implement advanced email automation that nurtures leads 24/7, saving you time and generating sales while you sleep.">
+                        <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </div>
+                    <div class="array-item">
+                        <input type="text" class="feature-input" value="Receive transparent, data-driven reports showing exact ROI, so you always know the direct impact on your bottom line.">
+                        <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add btn-small" onclick="addFeature()">+ Add Feature</button>
+            </div>
+
+            <div class="form-group">
+                <label>Benefits</label>
+                <div class="array-input" id="benefits-container">
+                    <div class="array-item">
+                        <input type="text" class="benefit-input" value="Stop guessing and start selling with email campaigns proven to engage your audience and drive immediate purchases.">
+                        <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </div>
+                    <div class="array-item">
+                        <input type="text" class="benefit-input" value="Achieve predictable revenue streams and significantly boost your customer lifetime value through strategic, ongoing communication.">
+                        <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </div>
+                    <div class="array-item">
+                        <input type="text" class="benefit-input" value="Benefit from our proprietary A/B testing framework and continuous optimization, ensuring your campaigns always perform at their peak.">
+                        <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add btn-small" onclick="addBenefit()">+ Add Benefit</button>
+            </div>
+
+            <div class="form-group">
+                <label>Testimonial (Optional)</label>
+                <textarea id="testimonial" placeholder="This agency transformed our email strategy...">This agency transformed our email strategy! We achieved a 3x ROI in three months, with incredible customer engagement. They truly understand what drives conversions.</textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="generatePreview()">🚀 Generate Preview URL</button>
+        </form>
+
+        <div class="preview-url" id="preview-section" style="display: none;">
+            <h3>📋 Preview URL Generated!</h3>
+            <div class="url-display" id="preview-url"></div>
+            <button type="button" class="btn btn-primary" onclick="openPreview()">Open Preview in New Tab</button>
+        </div>
+    </div>
+
+    <script>
+        function removeItem(btn) {
+            btn.parentElement.remove();
+        }
+
+        function addFeature() {
+            const container = document.getElementById('features-container');
+            const div = document.createElement('div');
+            div.className = 'array-item';
+            div.innerHTML = `
+                <input type="text" class="feature-input" placeholder="Enter feature description">
+                <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addBenefit() {
+            const container = document.getElementById('benefits-container');
+            const div = document.createElement('div');
+            div.className = 'array-item';
+            div.innerHTML = `
+                <input type="text" class="benefit-input" placeholder="Enter benefit description">
+                <button type="button" class="btn btn-remove" onclick="removeItem(this)">Remove</button>
+            `;
+            container.appendChild(div);
+        }
+
+        let generatedUrl = '';
+
+        function generatePreview() {
+            const baseUrl = 'http://localhost:5173/';
+            const params = new URLSearchParams();
+            
+            params.append('ai_preview', 'true');
+            params.append('page_title', document.getElementById('page_title').value);
+            params.append('hero_title', document.getElementById('hero_title').value);
+            params.append('hero_subtitle', document.getElementById('hero_subtitle').value);
+            params.append('hero_description', document.getElementById('hero_description').value);
+            params.append('cta_primary', document.getElementById('cta_primary').value);
+            params.append('cta_secondary', document.getElementById('cta_secondary').value);
+
+            // Collect features
+            const features = Array.from(document.querySelectorAll('.feature-input'))
+                .map(input => input.value)
+                .filter(val => val.trim() !== '');
+            params.append('features', JSON.stringify(features));
+
+            // Collect benefits
+            const benefits = Array.from(document.querySelectorAll('.benefit-input'))
+                .map(input => input.value)
+                .filter(val => val.trim() !== '');
+            params.append('benefits', JSON.stringify(benefits));
+
+            // Add testimonial if provided
+            const testimonial = document.getElementById('testimonial').value;
+            if (testimonial.trim()) {
+                params.append('testimonial', testimonial);
+            }
+
+            generatedUrl = baseUrl + '?' + params.toString();
+            
+            document.getElementById('preview-url').textContent = generatedUrl;
+            document.getElementById('preview-section').style.display = 'block';
+            
+            // Scroll to preview section
+            document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openPreview() {
+            if (generatedUrl) {
+                window.open(generatedUrl, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>

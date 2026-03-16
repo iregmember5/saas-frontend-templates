@@ -120,6 +120,135 @@ export default function TaxAdvisorLandingPage() {
     return null;
   };
 
+  // Helper function to apply AI preview overrides (like notary template)
+  const applyAiPreviewOverrides = (pageData: SalesPages): SalesPages => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ai_preview') !== 'true') {
+      return pageData;
+    }
+
+    const parseArrayParam = (param: string | null) => {
+      if (!param) return [];
+      try {
+        return JSON.parse(decodeURIComponent(param));
+      } catch {
+        return [];
+      }
+    };
+
+    const pageTitle = params.get('page_title')?.trim() || '';
+    const heroTitle = params.get('hero_title')?.trim() || '';
+    const heroSubtitle = params.get('hero_subtitle')?.trim() || '';
+    const heroDescription = params.get('hero_description')?.trim() || '';
+    const ctaPrimary = params.get('cta_primary')?.trim() || '';
+    const ctaSecondary = params.get('cta_secondary')?.trim() || '';
+    const features = parseArrayParam(params.get('features'));
+    const benefits = parseArrayParam(params.get('benefits'));
+    const testimonial = params.get('testimonial')?.trim() || '';
+
+    // Override header section
+    const updatedHeaderSection = pageTitle ? {
+      ...pageData.header_section,
+      title: pageTitle
+    } : pageData.header_section;
+
+    // Override hero section
+    const updatedHeroSection = {
+      ...pageData.main_hero_section,
+      heading: heroTitle || pageData.main_hero_section?.heading || '',
+      subheading: heroSubtitle || pageData.main_hero_section?.subheading || '',
+      description: heroDescription || pageData.main_hero_section?.description || '',
+      button: {
+        ...pageData.main_hero_section?.button,
+        text: ctaPrimary || pageData.main_hero_section?.button?.text || ''
+      }
+    };
+
+    // Override secondary CTA
+    const updatedSecondaryCta = {
+      ...pageData.secondary_cta_section,
+      button: {
+        ...pageData.secondary_cta_section?.button,
+        text: ctaSecondary || pageData.secondary_cta_section?.button?.text || ''
+      }
+    };
+
+    // Override reusable sections with features and benefits
+    let updatedReusableSections = [...(pageData.reusable_sections || [])];
+    
+    if (features.length > 0) {
+      const featuresSection = {
+        heading: 'Key Features',
+        subheading: '',
+        description: '',
+        subdescription: '',
+        button: { text: '', url: '' },
+        image: null,
+        cards: features.map((feature: string) => ({
+          name: '',
+          description: feature
+        }))
+      };
+      
+      // Replace first reusable section or add new one
+      if (updatedReusableSections.length > 0) {
+        updatedReusableSections[0] = featuresSection;
+      } else {
+        updatedReusableSections.push(featuresSection);
+      }
+    }
+
+    if (benefits.length > 0) {
+      const benefitsSection = {
+        heading: 'Benefits',
+        subheading: '',
+        description: '',
+        subdescription: '',
+        button: { text: '', url: '' },
+        image: null,
+        cards: benefits.map((benefit: string) => ({
+          name: '',
+          description: benefit
+        }))
+      };
+      
+      // Replace second reusable section or add new one
+      if (updatedReusableSections.length > 1) {
+        updatedReusableSections[1] = benefitsSection;
+      } else {
+        updatedReusableSections.push(benefitsSection);
+      }
+    }
+
+    // Add testimonial section if provided
+    if (testimonial) {
+      const testimonialSection = {
+        heading: 'What Our Clients Say',
+        subheading: '',
+        description: testimonial,
+        subdescription: '',
+        button: { text: '', url: '' },
+        image: null,
+        cards: []
+      };
+      
+      // Add or replace third section
+      if (updatedReusableSections.length > 2) {
+        updatedReusableSections[2] = testimonialSection;
+      } else {
+        updatedReusableSections.push(testimonialSection);
+      }
+    }
+
+    return {
+      ...pageData,
+      header_section: updatedHeaderSection,
+      main_hero_section: updatedHeroSection,
+      secondary_cta_section: updatedSecondaryCta,
+      reusable_sections: updatedReusableSections
+    };
+  };
+
   useEffect(() => {
     Promise.all([
       fetchAllSalesPages(),
@@ -137,35 +266,48 @@ export default function TaxAdvisorLandingPage() {
               .replace(/^-|-$/g, "");
             return slug === urlSlug;
           }) || salesPages[0];
-        setPageData(selectedPage);
+        
+        // Apply AI preview overrides if ai_preview=true
+        const finalPageData = applyAiPreviewOverrides(selectedPage);
+        
+        setPageData(finalPageData);
         setFeaturesData(featuresData);
         setLoading(false);
 
-        // Force update title and favicon after page loads
-        setTimeout(() => {
-          fetch("https://mypowerly.com/v1/api/site-settings/")
-            .then((res) => res.json())
-            .then((settings) => {
-              if (settings.site_title) {
-                document.title = settings.site_title;
-              }
-              if (settings.favicon?.url) {
-                const faviconUrl = settings.favicon.url.startsWith("http")
-                  ? settings.favicon.url
-                  : `https://https://mypowerly.com/v1${settings.favicon.url}`;
-                let link = document.querySelector(
-                  "link[rel~='icon']",
-                ) as HTMLLinkElement;
-                if (!link) {
-                  link = document.createElement("link");
-                  link.rel = "icon";
-                  document.head.appendChild(link);
+        // Update title if AI preview
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('ai_preview') === 'true') {
+          const pageTitle = params.get('page_title');
+          if (pageTitle) {
+            document.title = pageTitle;
+          }
+        } else {
+          // Force update title and favicon after page loads
+          setTimeout(() => {
+            fetch("https://mypowerly.com/v1/api/site-settings/")
+              .then((res) => res.json())
+              .then((settings) => {
+                if (settings.site_title) {
+                  document.title = settings.site_title;
                 }
-                link.href = faviconUrl;
-              }
-            })
-            .catch(console.error);
-        }, 100);
+                if (settings.favicon?.url) {
+                  const faviconUrl = settings.favicon.url.startsWith("http")
+                    ? settings.favicon.url
+                    : `https://https://mypowerly.com/v1${settings.favicon.url}`;
+                  let link = document.querySelector(
+                    "link[rel~='icon']",
+                  ) as HTMLLinkElement;
+                  if (!link) {
+                    link = document.createElement("link");
+                    link.rel = "icon";
+                    document.head.appendChild(link);
+                  }
+                  link.href = faviconUrl;
+                }
+              })
+              .catch(console.error);
+          }, 100);
+        }
       })
       .catch(console.error);
   }, [searchParams]);
