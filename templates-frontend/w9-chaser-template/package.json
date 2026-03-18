@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "node init && vite",
+    "build": "node init && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:analyze": "vite build --mode analyze"
+    "build:analyze": "node init && vite build --mode analyze"
   },
   "dependencies": {
     "framer-motion": "^12.23.24",
