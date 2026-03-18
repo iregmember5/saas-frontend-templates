@@ -98,6 +98,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onShowLogin }) => {
           document.title = pageData.meta_title || pageData.title;
         }
 
+        // Override title for AI preview
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('ai_preview') === 'true') {
+          const pageTitle = params.get('page_title');
+          if (pageTitle) document.title = pageTitle;
+        }
+
         // Set meta description
         const metaDescription = document.querySelector(
           'meta[name="description"]'

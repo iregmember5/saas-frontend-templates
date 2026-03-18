@@ -27,6 +27,12 @@ function App() {
         if (data) {
           setPageData(data);
           setRetryAt(null);
+          // Update document title for AI preview
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('ai_preview') === 'true') {
+            const pageTitle = params.get('page_title');
+            if (pageTitle) document.title = pageTitle;
+          }
         } else {
           setError("Failed to load page data");
         }
