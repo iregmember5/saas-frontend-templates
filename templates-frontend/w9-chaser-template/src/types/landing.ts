@@ -370,6 +370,76 @@ export interface FeaturesPageApiResponse {
   items: FeaturesPageData[];
 }
 
+// ===== AI Preview Overrides =====
+const parseJsonArrayParam = (value: string | null): any[] => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(decodeURIComponent(value));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const applyAiPreviewOverrides = (pageData: LandingPageData): LandingPageData => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('ai_preview') !== 'true') return pageData;
+
+  const pageTitle = params.get('page_title')?.trim() || '';
+  const heroTitle = params.get('hero_title')?.trim() || '';
+  const heroSubtitle = params.get('hero_subtitle')?.trim() || '';
+  const heroDescription = params.get('hero_description')?.trim() || '';
+  const ctaPrimary = params.get('cta_primary')?.trim() || '';
+  const ctaSecondary = params.get('cta_secondary')?.trim() || '';
+  const features = parseJsonArrayParam(params.get('features'));
+  const benefits = parseJsonArrayParam(params.get('benefits'));
+  const testimonial = params.get('testimonial')?.trim() || '';
+
+  const overrides: Partial<LandingPageData> = {};
+
+  if (pageTitle) overrides.header_title = pageTitle;
+  if (heroTitle) overrides.header_subtitle = heroTitle;
+  if (heroSubtitle) overrides.header_description = heroSubtitle;
+  if (heroDescription) overrides.header_description = heroDescription;
+  if (ctaPrimary) { overrides.header_cta_primary = ctaPrimary; overrides.cta_primary_text = ctaPrimary; }
+  if (ctaSecondary) { overrides.header_cta_secondary = ctaSecondary; overrides.cta_secondary_text = ctaSecondary; }
+
+  if (features.length > 0) {
+    overrides.features = features.map((f: any, i: number) => ({
+      id: i + 1,
+      title: typeof f === 'object' ? (f.title || f) : f,
+      description: typeof f === 'object' ? (f.description || '') : '',
+      icon: typeof f === 'object' ? (f.icon || '✅') : '✅',
+      order: i + 1,
+    }));
+  }
+
+  if (benefits.length > 0) {
+    overrides.benefits = benefits.map((b: any, i: number) => ({
+      id: i + 1,
+      title: typeof b === 'object' ? (b.title || b) : b,
+      description: typeof b === 'object' ? (b.description || '') : '',
+      stats: typeof b === 'object' ? (b.stats || '') : '',
+      icon: typeof b === 'object' ? (b.icon || '🚀') : '🚀',
+      order: i + 1,
+    }));
+  }
+
+  if (testimonial) {
+    overrides.testimonials = [{
+      id: 1,
+      quote: testimonial,
+      name: 'AI Preview',
+      title: '',
+      company: '',
+      photo: null,
+      order: 1,
+    }];
+  }
+
+  return { ...pageData, ...overrides };
+};
+
 // ===== API Service Functions =====
 export const fetchLandingPageData = async (): Promise<LandingPageData> => {
   try {
@@ -411,7 +481,7 @@ export const fetchLandingPageData = async (): Promise<LandingPageData> => {
         `Unsupported content type: ${contentType}. This template supports LandingPage only.`
       );
     }
-    return item;
+    return applyAiPreviewOverrides(item);
   } catch (error) {
     console.error("Error fetching landing page data:", error);
     throw error;
